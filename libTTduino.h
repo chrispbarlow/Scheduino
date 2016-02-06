@@ -7,8 +7,8 @@
 #ifndef _libTTduino_H_
 #define _libTTduino_H_
 
-#define TASK_INIT_FUNCTION volatile void
-#define TASK_UPDATE_FUNCTION volatile void
+#define taskInitFn volatile void
+#define taskUpdateFn volatile void
 
 #include "Arduino.h"
 
@@ -21,6 +21,8 @@ class TTduino{
     void addTask(task_function_t init, task_function_t update, uint32_t period, uint32_t offset);
     void begin(uint16_t ticklength);
     void runTasks(void);
+    /* Called by the ISR */
+    void __isrTick(void);
   private:
     struct tasks{
     	task_function_t task_function;	/* function pointer */
@@ -31,6 +33,9 @@ class TTduino{
     tasks* _taskList;
     uint16_t _tasksUsed;
     uint16_t _numTasks;
+    bool _schedLock;
+    void tick_Start(uint16_t period);
+    void sleepNow(void);
 };
 
 #endif /* _libTTduino_H_ */

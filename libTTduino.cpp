@@ -5,29 +5,31 @@
 #include "libTTduino.h"
 #include "Arduino.h"
 
-static void tick_Start(uint16_t period);
-static void sleepNow(void);
-
-bool schedLock = false;
+/* This is needed to give the timer ISR access to the correct instance of the schedule */
+TTduino* thisSchedule = NULL;
 
 TTduino::TTduino(uint16_t numTasks){
-	_tasksUsed = 0;
-	_numTasks = numTasks;
-	_taskList = new tasks[_numTasks];
+	if(thisSchedule == NULL){
+		_tasksUsed = 0;
+		_numTasks = numTasks;
+		_taskList = new tasks[numTasks];
+		_schedLock = true;
+		thisSchedule = this;
+	}
+	else{
+		/* Only one instance of the scheduler is allowed */
+	}
 }
 
 /* Call in setup() Adds a task to the task list */
 void TTduino::addTask(task_function_t init, task_function_t update, uint32_t period, uint32_t offset){
-	if(_tasksUsed >= _numTasks){
-		Serial.println("Too many tasks - increase NUM_TASKS in libTTduino.h");
-	}
-	else{
+	if(_tasksUsed < _numTasks){
 		_taskList[_tasksUsed].task_initFunction = init;
 		_taskList[_tasksUsed].task_function = update;
 		_taskList[_tasksUsed].task_period = period;
 		_taskList[_tasksUsed].task_delay = offset;
+		_tasksUsed++;
 	}
-	_tasksUsed++;
 }
 
 /*
@@ -52,8 +54,8 @@ void TTduino::runTasks(void){
 	sleepNow();
 /******************** Nothing happens until interrupt tick *****************************************/
 
-	/*schedLock prevents scheduler from running on non-timer interrupt */
-	if (schedLock == false){
+	/*_schedLock prevents scheduler from running on non-timer interrupt */
+	if (_schedLock == false){
 		for(i = 0; i < _tasksUsed; i++){
 			/* Task is ready when task_delay = 0 */
 			if(_taskList[i].task_delay == 0){
@@ -62,10 +64,6 @@ void TTduino::runTasks(void){
 				/* Call task function */
 				(*_taskList[i].task_function)();
 			}
-			else{
-				/* task delay decremented until it reaches zero (time to run) */
-				_taskList[i].task_delay--;
-			}
 		}
 	}
 }
@@ -73,7 +71,7 @@ void TTduino::runTasks(void){
 /*
  * Start the timer interrupts
  */
-void tick_Start(uint16_t period){
+void TTduino::tick_Start(uint16_t period){
 	/* initialize Timer1 */
 	cli(); 			/* disable global interrupts */
 	TCCR1A = 0; 	/* set entire TCCR1A register to 0 */
@@ -89,33 +87,39 @@ void tick_Start(uint16_t period){
 	sei(); /* enable global interrupts (start the timer)*/
 }
 
-
-/*
- * The ISR runs periodically every TICK_PERIOD
- */
-ISR(TIMER1_COMPA_vect){
-	sleep_disable();        /* disable sleep */
-	power_all_enable();		/* restore all power */
-	schedLock = false;		/* allow scheduler to run */
-
-}
-
-void sleepNow(){
-
-	set_sleep_mode(SLEEP_MODE_IDLE);  									/* sleep mode is set here */
-
-	sleep_enable();														/* enables the sleep bit in the mcucr register */
-																		/* so sleep is possible. just a safety pin */
-	power_adc_disable();												/* Power down some things to save power */
+void TTduino::sleepNow(){
+	set_sleep_mode(SLEEP_MODE_IDLE);  	/* sleep mode is set here */
+	sleep_enable();											/* enables the sleep bit in the mcucr register */
+																			/* so sleep is possible. just a safety pin */
+	power_adc_disable();								/* Power down some things to save power */
 	power_spi_disable();
 	power_timer0_disable();
 	power_twi_disable();
 
-	schedLock = true;													/* Prevent schedule from running on accidental wake-up */
-	sleep_mode();            											/* here the device is actually put to sleep!! */
-																		/* THE PROGRAM IS WOKEN BY TIMER1 ISR */
+	_schedLock = true;									/* Prevent schedule from running on accidental wake-up */
+	sleep_mode();            						/* here the device is actually put to sleep!! */
+/* THE PROGRAM IS WOKEN BY TIMER1 ISR */
 }
 
+void TTduino::__isrTick(){
+	int i;
+	sleep_disable();        /* disable sleep */
+	power_all_enable();			/* restore all power */
+	for(i = 0; i < _tasksUsed; i++){
+		/* task delay decremented until it reaches zero (time to run) */
+		if(_taskList[i].task_delay > 0){
+			_taskList[i].task_delay--;
+		}
+	}
+	_schedLock = false;		/* allow scheduler to run */
+}
+/*
+ * The ISR runs periodically every TICK_PERIOD
+ */
+ISR(TIMER1_COMPA_vect){
+	thisSchedule->__isrTick();
+}
+
+/* placeholder for tasks that have no initialisation code */
 volatile void no_init(){
-	/* placeholder for tasks that have no initialisation code */
 }
