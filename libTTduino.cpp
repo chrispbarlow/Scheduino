@@ -8,51 +8,42 @@ static void tick_Start(uint16_t period);
 static void sleepNow(void);
 
 bool schedLock = false;
-int tasksUsed = 0;
 
 
 /* Task properties */
-typedef struct
-{
-	task_function_t task_function;	/* function pointer */
-	task_function_t task_initFunction;	/* function pointer */
-	uint32_t        task_period;	/* period in ticks */
-	uint32_t        task_delay;		/* initial offset in ticks */
-} task_t;
+TTduino::scheduler(uint16_t numTasks, uint16_t tickLength){
+	_tasksUsed = 0;
+	_numTasks = numTasks;
+	_taskList = new tasks[_numTasks];
+	_ticklength = tickLength;
+}
 
-/*
- * The task array.
- * This dictates the tasks to be run from the scheduler
- * The order of these tasks sets their priority, should more than one task run in one tick
- * */
-task_t Tasks[NUM_TASKS];
-
-void TTduino_addTask(task_function_t init, task_function_t task, uint32_t period, uint32_t offset){
-	if(tasksUsed >= NUM_TASKS){
+void TTduino::addTask(task_function_t init, task_function_t task, uint32_t period, uint32_t offset){
+	if(_tasksUsed >= _numTasks){
 		Serial.println("Too many tasks - increase NUM_TASKS in libTTduino.h");
 	}
 	else{
-		Tasks[tasksUsed].task_initFunction = init;
-		Tasks[tasksUsed].task_function = task;
-		Tasks[tasksUsed].task_period = period;
-		Tasks[tasksUsed].task_delay = offset;
+		_taskList[_tasksUsed].task_initFunction = init;
+		_taskList[_tasksUsed].task_function = task;
+		_taskList[_tasksUsed].task_period = period;
+		_taskList[_tasksUsed].task_delay = offset;
 	}
-	tasksUsed++;
+	_tasksUsed++;
 }
 
 /*
  * The familiar Arduino setup() function: runs once when you press reset.
  * x_Init() functions contain initialisation code for the related tasks.
  */
-void TTduino_start(uint16_t ticklength){
+void TTduino::begin(){
 	int i;
 
 	wdt_disable();			/* Disable the watchdog timer */
-	for(i = 0; i < tasksUsed; i++){
-		(*Tasks[i].task_initFunction)();
+	for(i = 0; i < _tasksUsed; i++){
+		(*_taskList[i].task_initFunction)();
 	}
 
-	tick_Start(ticklength);
+	tick_Start(_ticklength);
 }
 
 /*
@@ -86,23 +77,23 @@ ISR(TIMER1_COMPA_vect){
 }
 
 /* The loop function handles scheduling of the tasks */
-void TTduino_runScheduledTasks(void){
+void TTduino::runScheduledTasks(void){
 	int i;
 	sleepNow();															/* Go to sleep. Woken by ISR loop continues, then sleep repeats */
 
 /******************** Nothing happens until interrupt tick *****************************************/
 //	if (schedLock == false)												/*schedLock prevents scheduler from running on non-timer interrupt */
 	{
-		for(i = 0; i < tasksUsed; i++)									/* For every task in schedule */
+		for(i = 0; i < _tasksUsed; i++)									/* For every task in schedule */
 		{
-			if(Tasks[i].task_delay == 0)								/* Task is ready when task_delay = 0 */
+			if(_taskList[i].task_delay == 0)								/* Task is ready when task_delay = 0 */
 			{
-				Tasks[i].task_delay = (Tasks[i].task_period - 1);		/* Reload task_delay */
-				(*Tasks[i].task_function)();							/* Call task function */
+				_taskList[i].task_delay = (Tasks[i].task_period - 1);		/* Reload task_delay */
+				(*_taskList[i].task_function)();							/* Call task function */
 			}
 			else
 			{
-				Tasks[i].task_delay--;									/* task delay decremented until it reaches zero (time to run) */
+				_taskList[i].task_delay--;									/* task delay decremented until it reaches zero (time to run) */
 			}
 		}
 	}
