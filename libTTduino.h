@@ -6,6 +6,10 @@
 
 #ifndef _libTTduino_H_
 #define _libTTduino_H_
+
+#define TASK_INIT_FUNCTION volatile void
+#define TASK_UPDATE_FUNCTION volatile void
+
 #include "Arduino.h"
 
 typedef volatile void (*task_function_t)(void);
