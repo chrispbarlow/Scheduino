@@ -3,28 +3,27 @@
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #include "libTTduino.h"
+#include "Arduino.h"
+
+
+TTduino::TTduino(uint16_t numTasks){
+	_tasksUsed = 0;
+	_numTasks = numTasks;
+	_taskList = new tasks[_numTasks];
+}
 
 static void tick_Start(uint16_t period);
 static void sleepNow(void);
 
 bool schedLock = false;
 
-
-/* Task properties */
-TTduino::scheduler(uint16_t numTasks, uint16_t tickLength){
-	_tasksUsed = 0;
-	_numTasks = numTasks;
-	_taskList = new tasks[_numTasks];
-	_ticklength = tickLength;
-}
-
-void TTduino::addTask(task_function_t init, task_function_t task, uint32_t period, uint32_t offset){
+void TTduino::addTask(task_function_t init, task_function_t update, uint32_t period, uint32_t offset){
 	if(_tasksUsed >= _numTasks){
 		Serial.println("Too many tasks - increase NUM_TASKS in libTTduino.h");
 	}
 	else{
 		_taskList[_tasksUsed].task_initFunction = init;
-		_taskList[_tasksUsed].task_function = task;
+		_taskList[_tasksUsed].task_function = update;
 		_taskList[_tasksUsed].task_period = period;
 		_taskList[_tasksUsed].task_delay = offset;
 	}
@@ -35,7 +34,7 @@ void TTduino::addTask(task_function_t init, task_function_t task, uint32_t perio
  * The familiar Arduino setup() function: runs once when you press reset.
  * x_Init() functions contain initialisation code for the related tasks.
  */
-void TTduino::begin(){
+void TTduino::begin(uint16_t ticklength){
 	int i;
 
 	wdt_disable();			/* Disable the watchdog timer */
@@ -43,7 +42,7 @@ void TTduino::begin(){
 		(*_taskList[i].task_initFunction)();
 	}
 
-	tick_Start(_ticklength);
+	tick_Start(ticklength);
 }
 
 /*
@@ -77,7 +76,7 @@ ISR(TIMER1_COMPA_vect){
 }
 
 /* The loop function handles scheduling of the tasks */
-void TTduino::runScheduledTasks(void){
+void TTduino::runTasks(void){
 	int i;
 	sleepNow();															/* Go to sleep. Woken by ISR loop continues, then sleep repeats */
 
@@ -88,7 +87,7 @@ void TTduino::runScheduledTasks(void){
 		{
 			if(_taskList[i].task_delay == 0)								/* Task is ready when task_delay = 0 */
 			{
-				_taskList[i].task_delay = (Tasks[i].task_period - 1);		/* Reload task_delay */
+				_taskList[i].task_delay = (_taskList[i].task_period - 1);		/* Reload task_delay */
 				(*_taskList[i].task_function)();							/* Call task function */
 			}
 			else
@@ -99,6 +98,9 @@ void TTduino::runScheduledTasks(void){
 	}
 }
 
+volatile void no_init(){
+	/* placeholder for tasks that have no initialisation code */
+}
 
 void sleepNow(){
 

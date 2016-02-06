@@ -8,16 +8,16 @@
 #define _libTTduino_H_
 #include "Arduino.h"
 
-#define NUM_TASKS 	(10)		/* Total number of tasks */
+typedef volatile void (*task_function_t)(void);
+volatile void no_init(void);
 
 class TTduino{
   public:
-    scheduler(uint16_t numTasks);
-    void addTask(task_function_t init, task_function_t task, uint32_t period, uint32_t offset);
-    void runInit();
-    void runScheduledTasks(void);
+    TTduino(uint16_t numTasks);
+    void addTask(task_function_t init, task_function_t update, uint32_t period, uint32_t offset);
+    void begin(uint16_t ticklength);
+    void runTasks(void);
   private:
-    typedef volatile void (*task_function_t)(void);
     struct tasks{
     	task_function_t task_function;	/* function pointer */
     	task_function_t task_initFunction;	/* function pointer */
@@ -27,17 +27,6 @@ class TTduino{
     tasks* _taskList;
     uint16_t _tasksUsed;
     uint16_t _numTasks;
-    uint16_t _ticklength;
 };
 
-/*
- * Function pointer for task array
- * This links the Task list with the functions from the includes
- * */
-
-
-// Prototypes
-
-
-//Do not add code below this line
 #endif /* _libTTduino_H_ */
