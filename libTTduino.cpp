@@ -68,9 +68,7 @@ void TTduino::runTasks(void){
 	}
 }
 
-/*
- * Start the timer interrupts
- */
+/* Start the timer interrupt */
 void TTduino::tick_Start(uint16_t period){
 	/* initialize Timer1 */
 	cli(); 			/* disable global interrupts */
@@ -101,23 +99,22 @@ void TTduino::sleepNow(){
 /* THE PROGRAM IS WOKEN BY TIMER1 ISR */
 }
 
-void TTduino::__isrTick(){
+void __isrTick(){
 	int i;
 	sleep_disable();        /* disable sleep */
 	power_all_enable();			/* restore all power */
-	for(i = 0; i < _tasksUsed; i++){
+	for(i = 0; i < thisSchedule->_tasksUsed; i++){
 		/* task delay decremented until it reaches zero (time to run) */
-		if(_taskList[i].task_delay > 0){
-			_taskList[i].task_delay--;
+		if(thisSchedule->_taskList[i].task_delay > 0){
+			thisSchedule->_taskList[i].task_delay--;
 		}
 	}
-	_schedLock = false;		/* allow scheduler to run */
+	thisSchedule->_schedLock = false;		/* allow scheduler to run */
 }
-/*
- * The ISR runs periodically every TICK_PERIOD
- */
+
+/* The ISR runs periodically every tick */
 ISR(TIMER1_COMPA_vect){
-	thisSchedule->__isrTick();
+	__isrTick();
 }
 
 /* placeholder for tasks that have no initialisation code */

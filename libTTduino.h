@@ -21,8 +21,9 @@ class TTduino{
     void addTask(task_function_t init, task_function_t update, uint32_t period, uint32_t offset);
     void begin(uint16_t ticklength);
     void runTasks(void);
-    /* Called by the ISR */
-    void __isrTick(void);
+    /* local ISR function */
+    friend void __isrTick(void);
+
   private:
     struct tasks{
     	task_function_t task_function;	/* function pointer */
