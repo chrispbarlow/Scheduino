@@ -33,7 +33,6 @@ void TTduino::addTask(task_function_t init, task_function_t update, uint32_t per
 void TTduino::setupTasks(void){
 	int i;
 
-	wdt_disable();			/* Disable the watchdog timer */
 	for(i = 0; i < _tasksUsed; i++){
 		(*_taskList[i].task_initFunction)();
 	}
@@ -42,6 +41,7 @@ void TTduino::setupTasks(void){
 /* Start the timer interrupt */
 void TTduino::startTicks(uint16_t period){
 	/* initialize Timer1 */
+	wdt_disable();			/* Disable the watchdog timer */
 	cli(); 			/* disable global interrupts */
 	TCCR1A = 0; 	/* set entire TCCR1A register to 0 */
 	TCCR1B = 0; 	/* same for TCCR1B */
