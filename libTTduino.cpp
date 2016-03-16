@@ -5,20 +5,14 @@
 #include "libTTduino.h"
 #include "Arduino.h"
 
-/* This is needed to give the timer ISR access to the correct instance of the schedule */
-TTduino* thisSchedule = NULL;
 
-TTduino::TTduino(uint16_t numTasks){
-	if(thisSchedule == NULL){
-		_tasksUsed = 0;
-		_numTasks = numTasks;
-		_taskList = new tasks[numTasks];
-		_schedLock = true;
-		thisSchedule = this;
-	}
-	else{
-		/* Only one instance of the scheduler is allowed */
-	}
+TTduino Schedule;
+
+void TTduino::begin(uint16_t numTasks){
+	_tasksUsed = 0;
+	_numTasks = numTasks;
+	_taskList = (tasks*)malloc(numTasks*sizeof(tasks)); //new tasks[numTasks];
+	_schedLock = true;
 }
 
 /* Call in setup() Adds a task to the task list */
@@ -36,15 +30,13 @@ void TTduino::addTask(task_function_t init, task_function_t update, uint32_t per
  * To be called at the end of setup()
  * Initialises the tasks via their _init functions before starting the timer
  */
-void TTduino::begin(uint16_t ticklength){
+void TTduino::setupTasks(void){
 	int i;
 
 	wdt_disable();			/* Disable the watchdog timer */
 	for(i = 0; i < _tasksUsed; i++){
 		(*_taskList[i].task_initFunction)();
 	}
-
-	tick_Start(ticklength);
 }
 
 /* Call as the only method in loop(). Handles scheduling of the tasks */
@@ -69,7 +61,7 @@ void TTduino::runTasks(void){
 }
 
 /* Start the timer interrupt */
-void TTduino::tick_Start(uint16_t period){
+void TTduino::startTicks(uint16_t period){
 	/* initialize Timer1 */
 	cli(); 			/* disable global interrupts */
 	TCCR1A = 0; 	/* set entire TCCR1A register to 0 */
@@ -103,13 +95,13 @@ void __isrTick(){
 	int i;
 	sleep_disable();        /* disable sleep */
 	power_all_enable();			/* restore all power */
-	for(i = 0; i < thisSchedule->_tasksUsed; i++){
+	for(i = 0; i < Schedule._tasksUsed; i++){
 		/* task delay decremented until it reaches zero (time to run) */
-		if(thisSchedule->_taskList[i].task_delay > 0){
-			thisSchedule->_taskList[i].task_delay--;
+		if(Schedule._taskList[i].task_delay > 0){
+			Schedule._taskList[i].task_delay--;
 		}
 	}
-	thisSchedule->_schedLock = false;		/* allow scheduler to run */
+	Schedule._schedLock = false;		/* allow scheduler to run */
 }
 
 /* The ISR runs periodically every tick */

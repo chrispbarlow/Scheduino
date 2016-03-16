@@ -7,7 +7,7 @@ This is an implementation of a Time Triggered Cooperative (TTC) scheduler, based
 
 Start a schedule with x tasks:
 
-`TTduino Schedule(x);`
+`Schedule.begin(x);`
 
 
 Create your tasks by adding writing two functions:
@@ -39,9 +39,12 @@ Control the task timing using:
 
 These two properties allow tasks to be spaced out in the timeline to provide reliable timing.
 
-Start the scheduler running with a tick length t (in microseconds):  
-```Schedule.begin(t); ```  
-This will run all of the _init functions and then start the timer.
+This will run all of the _init functions.
+```Schedule.setupTasks(); ```  
+
+Start the timer running with a tick length t (in microseconds):  
+```Schedule.startTicks(t); ```  
+
 
 Remember that ```t``` determines how long ```task_period``` and ```task_offset``` are.  
 ```t``` = 1000 and ```task_period``` = 100 gives a period of 100 milliseconds

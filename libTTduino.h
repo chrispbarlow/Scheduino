@@ -17,9 +17,10 @@ volatile void no_init(void);
 
 class TTduino{
   public:
-    TTduino(uint16_t numTasks);
+    void begin(uint16_t numTasks);
     void addTask(task_function_t init, task_function_t update, uint32_t period, uint32_t offset);
-    void begin(uint16_t ticklength);
+    void setupTasks(void);
+    void startTicks(uint16_t period);
     void runTasks(void);
     /* local ISR function */
     friend void __isrTick(void);
@@ -35,8 +36,9 @@ class TTduino{
     uint16_t _tasksUsed;
     uint16_t _numTasks;
     bool _schedLock;
-    void tick_Start(uint16_t period);
     void sleepNow(void);
 };
+
+extern TTduino Schedule;
 
 #endif /* _libTTduino_H_ */
