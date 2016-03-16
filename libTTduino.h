@@ -7,8 +7,8 @@
 #ifndef _libTTduino_H_
 #define _libTTduino_H_
 
-#define taskInitFn volatile void
-#define taskUpdateFn volatile void
+typedef volatile void taskInitFn;
+typedef volatile void taskUpdateFn;
 
 #include "Arduino.h"
 
