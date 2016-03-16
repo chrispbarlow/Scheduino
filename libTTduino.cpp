@@ -8,6 +8,7 @@
 
 TTduino Schedule;
 
+/* Create a task list */
 void TTduino::begin(uint16_t numTasks){
 	_tasksUsed = 0;
 	_numTasks = numTasks;
@@ -26,10 +27,7 @@ void TTduino::addTask(task_function_t init, task_function_t update, uint32_t per
 	}
 }
 
-/*
- * To be called at the end of setup()
- * Initialises the tasks via their _init functions before starting the timer
- */
+/* Initialise the tasks via their _init functions before starting the timer */
 void TTduino::setupTasks(void){
 	int i;
 
@@ -38,7 +36,7 @@ void TTduino::setupTasks(void){
 	}
 }
 
-/* Start the timer interrupt */
+/* Start the timer interrupt (call at the end of setup() )*/
 void TTduino::startTicks(uint16_t period){
 	/* initialize Timer1 */
 	wdt_disable();			/* Disable the watchdog timer */
@@ -92,6 +90,11 @@ void TTduino::sleepNow(){
 /* THE PROGRAM IS WOKEN BY TIMER1 ISR */
 }
 
+/* The ISR runs periodically every tick */
+ISR(TIMER1_COMPA_vect){
+	__isrTick();
+}
+
 void __isrTick(){
 	int i;
 	sleep_disable();        /* disable sleep */
@@ -103,11 +106,6 @@ void __isrTick(){
 		}
 	}
 	Schedule._schedLock = false;		/* allow scheduler to run */
-}
-
-/* The ISR runs periodically every tick */
-ISR(TIMER1_COMPA_vect){
-	__isrTick();
 }
 
 /* placeholder for tasks that have no initialisation code */
