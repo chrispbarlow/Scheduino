@@ -1,4 +1,4 @@
-# libTTduino
+# Scheduino
 Time Triggered Cooperative scheduler library for Arduino
 
 Examples are included in the ./examples folder

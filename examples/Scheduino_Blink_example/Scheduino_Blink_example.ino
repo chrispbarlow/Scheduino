@@ -1,12 +1,12 @@
 /**************************************************
- * TTduino_example
- * 
- * Simple example using the TTduino library.
+ * Scheduino_Blink_example
+ *
+ * Simple example using the Scheduino library.
  * Replicates the behaviour of the standard Arduino 'Blink' example, while outputting the LED status (ON or OFF) to the Serial port
- * 
+ *
  */
 
-#include <libTTduino.h>
+#include <Scheduino.h>
 
 /* Tasks are added to the schedule here in the form addTask(init_function, update_fuction, task_period, task_offset) */
 void setup() {
@@ -18,10 +18,10 @@ void setup() {
   Schedule.addTask(no_init, ledOff_update, 2000, 1000);
   /* The status is output every 100 'ticks', offset by 1 'tick' */
   Schedule.addTask(statusOut_init, statusOut_update, 100, 1);
-  
+
   /* All _init functions will be executed at this point */
   Schedule.setupTasks();
-  
+
   /* Starting the scheduler with a tick length of 1000 microseconds */
   Schedule.startTicks(1000);
 }
@@ -39,12 +39,12 @@ taskInitFn ledOn_init(){
 }
 
 taskUpdateFn ledOn_update(){
-  digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)  
+  digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
 }
 
 /* This task will switch OFF the LED on pin 13
  * NOTE: There is no need for an INIT function since the LED will be initialised in ledOn_init() */
-taskUpdateFn ledOff_update(){  
+taskUpdateFn ledOff_update(){
   digitalWrite(13, LOW);   // turn the LED off by making the voltage LOW
 }
 
@@ -56,5 +56,5 @@ taskInitFn statusOut_init(){
 taskUpdateFn statusOut_update(){
   int pinVal = digitalRead(13);
   Serial.print("LED is: ");
-  Serial.println(pinVal ? "ON" : "OFF");  
+  Serial.println(pinVal ? "ON" : "OFF");
 }
