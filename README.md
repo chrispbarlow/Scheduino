@@ -10,28 +10,21 @@ Start a schedule with x tasks:
 `Schedule.begin(x);`
 
 
-Create your tasks by adding writing two functions:
+Create your tasks by adding a function:
 
 ```
-taskInitFn task_init(){  
-/* Initialisation code goes here if you need any */  
-}
-    
-taskUpdateFn task_update(){  
+taskFn task_function_name(){  
   /* The code in here will be repeated in the scheduler */  
 }
 ```
 
-(Functions can have any name you like, but it's good practice to use ```_init``` and ```_update``` to tell them apart.)
+(Functions can have any name you like)
 
 Add your tasks to the schedule in ```setup()```:
+```Schedule.addTask(task_function_name, task_period, task_offset);```  
+Repeat for all of your tasks.
 
-```Schedule.addTask(task_init, task_update, task_period, task_offset);```  
-repeat for all of your tasks
-
-
-If your task doesn't need any special initialisation code don't bother writing an empty function, you can use ```no_init```:  
-```Schedule.addTask(no_init, task_update, task_period, task_offset);```
+Also include any 'run-once' code that you would usually put in ```setup()```.
 
 Control the task timing using:  
 ```task_period```: The time in 'ticks' between executions of the task.  
@@ -39,15 +32,12 @@ Control the task timing using:
 
 These two properties allow tasks to be spaced out in the timeline to provide reliable timing.
 
-This will run all of the _init functions.
-```Schedule.setupTasks(); ```  
-
-Start the timer running with a tick length t (in microseconds):  
+Right at the end of ```setup()```, start the timer running with a tick length, ```t``` (in microseconds):  
 ```Schedule.startTicks(t); ```  
 
 
 Remember that ```t``` determines how long ```task_period``` and ```task_offset``` are.  
-```t``` = 1000 and ```task_period``` = 100 gives a period of 100 milliseconds
+e.g. ```t``` = 1000 and ```task_period``` = 100 gives a period of 100,000 microseconds, or 100 milliseconds. ```task_offset``` = 1 will run the task 1000 microseconds after the start of the schedule.
 
 
 

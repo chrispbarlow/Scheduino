@@ -17,9 +17,9 @@ void TTduino::begin(uint16_t numTasks){
 }
 
 /* Call in setup() Adds a task to the task list */
-void TTduino::addTask(task_function_t update, uint32_t period, uint32_t offset){
+void TTduino::addTask(task_function_t function, uint32_t period, uint32_t offset){
 	if(_tasksUsed < _numTasks){
-		_taskList[_tasksUsed].task_function = update;
+		_taskList[_tasksUsed].task_function = function;
 		_taskList[_tasksUsed].task_period = period;
 		_taskList[_tasksUsed].task_delay = offset;
 		_tasksUsed++;
