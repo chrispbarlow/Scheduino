@@ -8,7 +8,7 @@
 
 #include <Scheduino.h>
 
-/* Tasks are added to the schedule here in the form addTask(init_function, update_fuction, task_period, task_offset) */
+/* Tasks are added to the schedule here in the form addTask(task_function_name, task_period, task_offset) */
 void setup() {
   /* Create a schedule with 3 tasks */
   Schedule.begin(3);

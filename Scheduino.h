@@ -1,11 +1,15 @@
-// Only modify this file to include
-// - function definitions (prototypes)
-// - include files
-// - extern variable definitions
-// In the appropriate section
+/*
+ * Copyright (c) 2016 by Chris Barlow <chrisbarlow.wordpress.com>
+ * Time-Triggered Cooperative Scheduler for arduino.
+ *
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either the GNU General Public License version 2
+ * or the GNU Lesser General Public License version 2.1, both as
+ * published by the Free Software Foundation.
+ */
 
-#ifndef _libTTduino_H_
-#define _libTTduino_H_
+#ifndef _SCHEDUINO_H_
+#define _SCHEDUINO_H_
 
 #include "Arduino.h"
 
@@ -42,4 +46,4 @@ class TTduino{
 
 extern TTduino Schedule;
 
-#endif /* _libTTduino_H_ */
+#endif /* _SCHEDUINO_H_ */

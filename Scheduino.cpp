@@ -1,4 +1,13 @@
-// Do not remove the include below
+/*
+ * Copyright (c) 2016 by Chris Barlow <chrisbarlow.wordpress.com>
+ * Time-Triggered Cooperative Scheduler for arduino.
+ *
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either the GNU General Public License version 2
+ * or the GNU Lesser General Public License version 2.1, both as
+ * published by the Free Software Foundation.
+ */
+
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
