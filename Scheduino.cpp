@@ -2,7 +2,7 @@
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
-#include "libTTduino.h"
+#include "Scheduino.h"
 #include "Arduino.h"
 
 
@@ -91,10 +91,6 @@ void TTduino::sleepNow(){
 }
 
 /* The ISR runs periodically every tick */
-ISR(TIMER1_COMPA_vect){
-	__isrTick();
-}
-
 void __isrTick(){
 	int i;
 	sleep_disable();        /* disable sleep */
@@ -106,6 +102,9 @@ void __isrTick(){
 		}
 	}
 	Schedule._schedLock = false;		/* allow scheduler to run */
+}
+ISR(TIMER1_COMPA_vect){
+	__isrTick();
 }
 
 /* placeholder for tasks that have no initialisation code */
