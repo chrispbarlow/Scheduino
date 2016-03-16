@@ -39,6 +39,23 @@ void TTduino::setupTasks(void){
 	}
 }
 
+/* Start the timer interrupt */
+void TTduino::startTicks(uint16_t period){
+	/* initialize Timer1 */
+	cli(); 			/* disable global interrupts */
+	TCCR1A = 0; 	/* set entire TCCR1A register to 0 */
+	TCCR1B = 0; 	/* same for TCCR1B */
+
+	/* set compare match register to desired timer count: */
+	OCR1A = (16 * period); /* TICK_PERIOD is in microseconds */
+	/* turn on CTC mode: */
+	TCCR1B |= (1 << WGM12);
+	/* enable timer compare interrupt: */
+	TIMSK1 |= (1 << OCIE1A);
+	TCCR1B |= (1 << CS10);
+	sei(); /* enable global interrupts (start the timer)*/
+}
+
 /* Call as the only method in loop(). Handles scheduling of the tasks */
 void TTduino::runTasks(void){
 	int i;
@@ -60,22 +77,6 @@ void TTduino::runTasks(void){
 	}
 }
 
-/* Start the timer interrupt */
-void TTduino::startTicks(uint16_t period){
-	/* initialize Timer1 */
-	cli(); 			/* disable global interrupts */
-	TCCR1A = 0; 	/* set entire TCCR1A register to 0 */
-	TCCR1B = 0; 	/* same for TCCR1B */
-
-	/* set compare match register to desired timer count: */
-	OCR1A = (16 * period); /* TICK_PERIOD is in microseconds */
-	/* turn on CTC mode: */
-	TCCR1B |= (1 << WGM12);
-	/* enable timer compare interrupt: */
-	TIMSK1 |= (1 << OCIE1A);
-	TCCR1B |= (1 << CS10);
-	sei(); /* enable global interrupts (start the timer)*/
-}
 
 void TTduino::sleepNow(){
 	set_sleep_mode(SLEEP_MODE_IDLE);  	/* sleep mode is set here */
