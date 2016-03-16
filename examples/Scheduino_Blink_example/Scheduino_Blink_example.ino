@@ -12,15 +12,15 @@
 void setup() {
   /* Create a schedule with 3 tasks */
   Schedule.begin(3);
-  /* The LED is turned on every 2000 'ticks' */
-  Schedule.addTask(ledOn_init, ledOn_update, 2000, 0);
-  /* The LED is turned off every 2000 'ticks', offset by 1000 'ticks' (note 'no_init' is used to indicate the absense of an initialisation function */
-  Schedule.addTask(no_init, ledOff_update, 2000, 1000);
-  /* The status is output every 100 'ticks', offset by 1 'tick' */
-  Schedule.addTask(statusOut_init, statusOut_update, 100, 1);
 
-  /* All _init functions will be executed at this point */
-  Schedule.setupTasks();
+  /* The LED is turned on every 2000 'ticks' and off every 2000 'ticks', offset by 1000 'ticks'*/
+  pinMode(13, OUTPUT);
+  Schedule.addTask(ledOn, 2000, 0);
+  Schedule.addTask(ledOff, 2000, 1000);
+
+  /* The status is output every 100 'ticks', offset by 1 'tick' */
+  Serial.begin(9600);
+  Schedule.addTask(statusOut, 100, 1);
 
   /* Starting the scheduler with a tick length of 1000 microseconds */
   Schedule.startTicks(1000);
@@ -34,26 +34,17 @@ void loop() {
 /********** Task Functions **********/
 
 /* This task will switch ON the LED on pin 13 */
-taskInitFn ledOn_init(){
-  pinMode(13, OUTPUT);
-}
-
-taskUpdateFn ledOn_update(){
+taskFn ledOn(){
   digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
 }
 
-/* This task will switch OFF the LED on pin 13
- * NOTE: There is no need for an INIT function since the LED will be initialised in ledOn_init() */
-taskUpdateFn ledOff_update(){
+/* This task will switch OFF the LED on pin 13 */
+taskFn ledOff(){
   digitalWrite(13, LOW);   // turn the LED off by making the voltage LOW
 }
 
 /* This task sends the status of the LED pin to the serial port */
-taskInitFn statusOut_init(){
-  Serial.begin(9600);
-}
-
-taskUpdateFn statusOut_update(){
+taskFn statusOut(){
   int pinVal = digitalRead(13);
   Serial.print("LED is: ");
   Serial.println(pinVal ? "ON" : "OFF");

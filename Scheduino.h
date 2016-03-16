@@ -7,22 +7,17 @@
 #ifndef _libTTduino_H_
 #define _libTTduino_H_
 
-typedef volatile void taskInitFn;
-typedef volatile void taskUpdateFn;
-
 #include "Arduino.h"
 
+typedef volatile void taskFn;
 typedef volatile void (*task_function_t)(void);
-volatile void no_init(void);
 
 class TTduino{
   public:
     /* Create a task list */
     void begin(uint16_t numTasks);
     /* Call in setup() Adds a task to the task list */
-    void addTask(task_function_t init, task_function_t update, uint32_t period, uint32_t offset);
-    /* Initialise the tasks via their _init functions before starting the timer */
-    void setupTasks(void);
+    void addTask(task_function_t function, uint32_t period, uint32_t offset);
     /* Start the timer interrupt (call at the end of setup() )*/
     void startTicks(uint16_t period);
     /* Call as the only method in loop(). Handles scheduling of the tasks */
