@@ -14,6 +14,8 @@
 #include "Scheduino.h"
 #include "Arduino.h"
 
+#define SET_TA(t) (*(t.analysis_pin_port) |= t.analysis_pin_bit)
+#define CLR_TA(t) (*(t.analysis_pin_port) &= ~t.analysis_pin_bit)
 
 TTduino Schedule;
 
@@ -21,16 +23,36 @@ TTduino Schedule;
 void TTduino::begin(uint16_t numTasks){
 	_tasksUsed = 0;
 	_numTasks = numTasks;
-	_taskList = (tasks*)malloc(numTasks*sizeof(tasks)); //new tasks[numTasks];
+	_taskList = (tasks*)malloc(numTasks*sizeof(tasks));
 	_schedLock = true;
+}
+
+void TTduino::addToTaskList(task_function_t function, uint32_t period, uint32_t offset){
+	_taskList[_tasksUsed].task_function = function;
+	_taskList[_tasksUsed].task_period = period;
+	_taskList[_tasksUsed].task_delay = offset;
 }
 
 /* Call in setup() Adds a task to the task list */
 void TTduino::addTask(task_function_t function, uint32_t period, uint32_t offset){
 	if(_tasksUsed < _numTasks){
-		_taskList[_tasksUsed].task_function = function;
-		_taskList[_tasksUsed].task_period = period;
-		_taskList[_tasksUsed].task_delay = offset;
+		addToTaskList(function,period,offset);
+		_taskList[_tasksUsed].analysis_pin_bit = 0;
+		_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(0);
+		_tasksUsed++;
+	}
+}
+
+void TTduino::addTask(task_function_t function, uint32_t period, uint32_t offset, uint8_t analysisPin){
+	uint8_t port;
+	if(_tasksUsed < _numTasks){
+		addToTaskList(function,period,offset);
+
+		pinMode(analysisPin, OUTPUT);
+		digitalWrite(analysisPin, LOW);
+		_taskList[_tasksUsed].analysis_pin_bit = digitalPinToBitMask(analysisPin);
+		port = digitalPinToPort(analysisPin);
+		_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(port);
 		_tasksUsed++;
 	}
 }
@@ -55,7 +77,7 @@ void TTduino::startTicks(uint16_t period){
 
 /* Call as the only method in loop(). Handles scheduling of the tasks */
 void TTduino::runTasks(void){
-	int i;
+	uint16_t i;
 	/* Go to sleep. Woken by ISR loop continues, then sleep repeats */
 	sleepNow();
 /******************** Nothing happens until interrupt tick *****************************************/
@@ -67,8 +89,10 @@ void TTduino::runTasks(void){
 			if(_taskList[i].task_delay == 0){
 				/* Reload task_delay */
 				_taskList[i].task_delay = (_taskList[i].task_period - 1);
+				SET_TA(_taskList[i]);
 				/* Call task function */
 				(*_taskList[i].task_function)();
+				CLR_TA(_taskList[i]);
 			}
 		}
 	}
@@ -91,7 +115,7 @@ void TTduino::sleepNow(){
 
 /* The ISR runs periodically every tick */
 void __isrTick(){
-	int i;
+	uint16_t i;
 	sleep_disable();        /* disable sleep */
 	power_all_enable();			/* restore all power */
 	for(i = 0; i < Schedule._tasksUsed; i++){

@@ -22,6 +22,7 @@ class TTduino{
     void begin(uint16_t numTasks);
     /* Call in setup() Adds a task to the task list */
     void addTask(task_function_t function, uint32_t period, uint32_t offset);
+    void addTask(task_function_t function, uint32_t period, uint32_t offset, uint8_t analysisPin);
     /* Start the timer interrupt (call at the end of setup() )*/
     void startTicks(uint16_t period);
     /* Call as the only method in loop(). Handles scheduling of the tasks */
@@ -32,16 +33,18 @@ class TTduino{
 
   private:
     struct tasks{
-    	task_function_t task_function;	/* function pointer */
-    	task_function_t task_initFunction;	/* function pointer */
-    	uint32_t        task_period;	/* period in ticks */
-    	uint32_t        task_delay;		/* initial offset in ticks */
+    	task_function_t        task_function;	/* function pointer */
+    	uint32_t               task_period;	/* period in ticks */
+    	uint32_t               task_delay;		/* initial offset in ticks */
+        volatile uint8_t        *analysis_pin_port;   /* optional GPIO pin to toggle for timing analysis */
+        uint8_t                 analysis_pin_bit;   /* optional GPIO pin to toggle for timing analysis */
     };
     tasks* _taskList;
     uint16_t _tasksUsed;
     uint16_t _numTasks;
     bool _schedLock;
     void sleepNow(void);
+    void addToTaskList(task_function_t function, uint32_t period, uint32_t offset);
 };
 
 extern TTduino Schedule;

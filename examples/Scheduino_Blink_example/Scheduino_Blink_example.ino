@@ -5,8 +5,8 @@
  * Replicates the behaviour of the standard Arduino 'Blink' example, while outputting the LED status (ON or OFF) to the Serial port
  *
  */
-
 #include <Scheduino.h>
+
 
 /* Tasks are added to the schedule here in the form addTask(task_function_name, task_period, task_offset) */
 void setup() {
@@ -15,12 +15,13 @@ void setup() {
 
   /* The LED is turned on every 2000 'ticks' and off every 2000 'ticks', offset by 1000 'ticks'*/
   pinMode(13, OUTPUT);
+  digitalWrite(13, LOW);
   Schedule.addTask(ledOn, 2000, 0);
   Schedule.addTask(ledOff, 2000, 1000);
 
   /* The status is output every 100 'ticks', offset by 1 'tick' */
   Serial.begin(9600);
-  Schedule.addTask(statusOut, 100, 1);
+  Schedule.addTask(statusOut, 100, 1, 10);
 
   /* Starting the scheduler with a tick length of 1000 microseconds */
   Schedule.startTicks(1000);
