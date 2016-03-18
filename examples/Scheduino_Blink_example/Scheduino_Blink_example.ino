@@ -23,8 +23,8 @@ void setup() {
   Serial.begin(9600);
   Schedule.addTask(statusOut, 100, 1, 10);
 
-  /* Starting the scheduler with a tick length of 1000 microseconds */
-  Schedule.startTicks(1000);
+  /* Starting the scheduler with a tick length of 1 millisecond */
+  Schedule.startTicks(1);
 }
 
 /* It's best not to do anything in loop() except runTasks() - doing anything else here may make affect timing */

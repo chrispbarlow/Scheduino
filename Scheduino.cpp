@@ -66,7 +66,7 @@ void TTduino::startTicks(uint16_t period){
 	TCCR1B = 0; 	/* same for TCCR1B */
 
 	/* set compare match register to desired timer count: */
-	OCR1A = (16 * period); /* TICK_PERIOD is in microseconds */
+	OCR1A = (16000 * period); /* period is in milliseconds */
 	/* turn on CTC mode: */
 	TCCR1B |= (1 << WGM12);
 	/* enable timer compare interrupt: */
