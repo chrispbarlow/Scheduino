@@ -60,13 +60,13 @@ Schedule.addTask(taskB, 10, 1);
 Schedule.startTicks(10);
 ```
 Timeline:
-
+```
 ^     ^     ^     ^     ^     ^     ^     ^     ^     ^     ^     ^     ^     
 |---  |-----|---  |     |     |---  |     |     |     |     |---  |-----|---  
 |¦A¦  |¦   B|  ¦  |     |     |¦A¦  |     |     |     |     |¦A¦  |¦   B|  ¦
 0-----1-----2-----3-----4-----5-----6-----7-----8-----9----10----11----12----
 Tick length = 10 ms
-
+```
 Task A will run every 50 ms starting at tick 0. Task B will run every 100 ms, but has an offset of 1, so it will first run in tick 1. It doesn't matter that Task B takes longer than 1 tick, because there is enough space for it to complete before Task A is run again.
 
 ##Execution
