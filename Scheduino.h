@@ -13,8 +13,7 @@
 
 #include "Arduino.h"
 
-typedef volatile void taskFn;
-typedef volatile void (*task_function_t)(void);
+typedef void (*task_function_t)(void);
 
 class TTduino{
   public:

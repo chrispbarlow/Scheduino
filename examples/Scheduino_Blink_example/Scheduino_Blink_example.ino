@@ -35,17 +35,17 @@ void loop() {
 /********** Task Functions **********/
 
 /* This task will switch ON the LED on pin 13 */
-taskFn ledOn(){
+void ledOn(){
   digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
 }
 
 /* This task will switch OFF the LED on pin 13 */
-taskFn ledOff(){
+void ledOff(){
   digitalWrite(13, LOW);   // turn the LED off by making the voltage LOW
 }
 
 /* This task sends the status of the LED pin to the serial port */
-taskFn statusOut(){
+void statusOut(){
   int pinVal = digitalRead(13);
   Serial.print("LED is: ");
   Serial.println(pinVal ? "ON" : "OFF");
