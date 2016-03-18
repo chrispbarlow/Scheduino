@@ -78,7 +78,42 @@ void loop() {
 ```
 All other code should be in the task functions, don't put anything else in ```loop()```.
 
-##ADVANCED: Timing Analysis
+##ADVANCED
+
+###Prioritising tasks
+
+If you have multiple tasks that are expected to run in the same tick, it's useful to know that the tasks will run in the order that you add them to the schedule in ```setup()```:
+
+####Example:
+
+Two tasks, Task C and Task D configured as follows:
+```
+Schedule.begin(2);
+
+Schedule.addTask(taskC, 0, 1);
+Schedule.addTask(taskD, 0, 5);
+
+Schedule.startTicks(10);
+```
+Task C is a very short task, which will run in every tick. Task D is configured to run every 5 ticks. Because Task C is added to the schedule first, it will run before Task D.
+
+![Schedule timeline 2](https://chrisbarlow.files.wordpress.com/2016/03/capture2.png)
+
+However, reversing the order you add them will result in this:
+
+```
+Schedule.begin(2);
+
+Schedule.addTask(taskD, 0, 5);
+Schedule.addTask(taskC, 0, 1);
+
+Schedule.startTicks(10);
+```
+![Schedule timeline 3](https://chrisbarlow.files.wordpress.com/2016/03/capture3.png)
+
+It depends on the application to decide which task requires the most precise timing. Generally controlling (setting pins) or reading tasks need a higher priority than reporting tasks.
+
+###Timing Analysis
 
 It is possible to check the timing of tasks using an oscilloscope and configuring an analysis pin for a task. To do this, include the desired pin as a fourth argument when you add the task to the schedule:
 ```Schedule.addTask(task_function_name, task_offset, task_period, pin_number);```  
