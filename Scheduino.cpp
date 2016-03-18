@@ -27,26 +27,26 @@ void TTduino::begin(uint16_t numTasks){
 	_schedLock = true;
 }
 
-void TTduino::addToTaskList(task_function_t function, uint32_t period, uint32_t offset){
+void TTduino::addToTaskList(task_function_t function, uint32_t offset, uint32_t period){
 	_taskList[_tasksUsed].task_function = function;
 	_taskList[_tasksUsed].task_period = period;
 	_taskList[_tasksUsed].task_delay = offset;
 }
 
 /* Call in setup() Adds a task to the task list */
-void TTduino::addTask(task_function_t function, uint32_t period, uint32_t offset){
+void TTduino::addTask(task_function_t function, uint32_t offset, uint32_t period){
 	if(_tasksUsed < _numTasks){
-		addToTaskList(function,period,offset);
+		addToTaskList(function,offset,period);
 		_taskList[_tasksUsed].analysis_pin_bit = 0;
 		_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(0);
 		_tasksUsed++;
 	}
 }
 
-void TTduino::addTask(task_function_t function, uint32_t period, uint32_t offset, uint8_t analysisPin){
+void TTduino::addTask(task_function_t function, uint32_t offset, uint32_t period, uint8_t analysisPin){
 	uint8_t port;
 	if(_tasksUsed < _numTasks){
-		addToTaskList(function,period,offset);
+		addToTaskList(function,offset,period);
 
 		pinMode(analysisPin, OUTPUT);
 		digitalWrite(analysisPin, LOW);

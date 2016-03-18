@@ -29,12 +29,12 @@ void setup() {
 	 * Also include your setup code here as normal */
 
 	/* ['run-once' setup code for 1st task] */
-	Schedule.addTask(1st_task_function_name, task_period, task_offset);
+	Schedule.addTask(1st_task_function_name, task_offset, task_period);
 
 	/* ... */
 
 	/* ['run-once' setup code for nth task] */
-	Schedule.addTask(nth_task_function_name, task_period, task_offset);
+	Schedule.addTask(nth_task_function_name, task_offset, task_period);
 
 	/* Start the scheduler with a tick length, t ms (see note 2)*/
 	Schedule.startTicks(t);
@@ -42,21 +42,24 @@ void setup() {
 ```
 ###Note 1:
 Control the task timing using:  
-```task_period```: The time in 'ticks' between executions of the task.  
 ```task_offset```: The time in 'ticks' between start-up and the first execution of the task.  
+```task_period```: The time in 'ticks' between executions of the task.  
+
 
 These two properties allow tasks to be spaced out in the timeline to provide reliable timing.
 
 ###Note 2:
-Remember that ```t``` determines how long ```task_period``` and ```task_offset``` are.  
+Remember that ```t``` determines how long ```task_offset``` and ```task_period``` are.  
 
 ###Example:
 
 Consider two tasks, Task A and Task B configured as follows:
 ```
 Schedule.begin(2);
-Schedule.addTask(taskA, 5, 0);
-Schedule.addTask(taskB, 10, 1);
+
+Schedule.addTask(taskA, 0, 5);
+Schedule.addTask(taskB, 1, 10);
+
 Schedule.startTicks(10);
 ```
 Timeline:
@@ -78,7 +81,7 @@ All other code should be in the task functions, don't put anything else in ```lo
 ##ADVANCED: Timing Analysis
 
 It is possible to check the timing of tasks using an oscilloscope and configuring an analysis pin for a task. To do this, include the desired pin as a fourth argument when you add the task to the schedule:
-```Schedule.addTask(task_function_name, task_period, task_offset, pin_number);```  
+```Schedule.addTask(task_function_name, task_offset, task_period, pin_number);```  
 
 With an analysis pin enabled, the scheduler will set this pin high just before the task is run, and set it low again when the task completes. (Note there are some overheads involved in setting and clearing the pin, so the timing shown on the oscilloscope wont be spot on, but it'll give you an idea of when tasks are colliding)
 

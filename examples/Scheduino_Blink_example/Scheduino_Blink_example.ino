@@ -16,12 +16,12 @@ void setup() {
   /* The LED is turned on every 2000 'ticks' and off every 2000 'ticks', offset by 1000 'ticks'*/
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
-  Schedule.addTask(ledOn, 2000, 0);
-  Schedule.addTask(ledOff, 2000, 1000);
+  Schedule.addTask(ledOn, 0, 2000);
+  Schedule.addTask(ledOff, 1000, 2000);
 
   /* The status is output every 100 'ticks', offset by 1 'tick' */
   Serial.begin(9600);
-  Schedule.addTask(statusOut, 100, 1, 10);
+  Schedule.addTask(statusOut, 1, 100);
 
   /* Starting the scheduler with a tick length of 1 millisecond */
   Schedule.startTicks(1);
