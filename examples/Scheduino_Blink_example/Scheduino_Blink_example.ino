@@ -49,7 +49,4 @@ void statusOut(){
   int pinVal = digitalRead(13);
   Serial.print("LED is: ");
   Serial.println(pinVal ? "ON" : "OFF");
-
-  /* wait for Serial to finish sending data - IMPORTANT - without this, timing of preceding tasks could be affected */
-  Serial.flush();
 }
