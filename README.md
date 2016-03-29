@@ -10,14 +10,14 @@ This is an implementation of a Time Triggered Cooperative (TTC) scheduler, based
 Create your tasks as seperate void functions (see https://www.arduino.cc/en/Reference/FunctionDeclaration):
 
 ```
-void 1st_task_function_name() {  
-  /* [Code for 1st task to be repeated by the scheduler] */  
+void task_1_function_name() {  
+  /* [Repeated ('looped') code for Task 1] */  
 }
 
 /* ... */
 
-void nth_task_function_name() {  
-  /* [Code for nth task to be repeated by the scheduler] */  
+void task_n_function_name() {  
+  /* [Repeated ('looped') code for Task n] */  
 }
 ```
 Task functions can have any name and can call any other functions you like. 
@@ -35,18 +35,18 @@ void setup() {
 	 * Also include your setup code here as normal: */
 
 	/* ['run-once' setup code for 1st task] */
-	Schedule.addTask(1st_task_function_name, task_1_offset, task_1_period);
+	Schedule.addTask(task_1_function_name, task_1_offset, task_1_period);
 
 	/* ... */
 
 	/* ['run-once' setup code for nth task] */
-	Schedule.addTask(nth_task_function_name, task_n_offset, task_n_period);
+	Schedule.addTask(task_n_function_name, task_n_offset, task_n_period);
 
 	/* Start the scheduler with a tick length, t ms (see note 2):*/
 	Schedule.startTicks(t);
 }
 ```
-###Note 1:
+####Note 1:
 Control the task timing using:  
 ```task_offset```: The time in 'ticks' between start-up and the first execution of the task.  
 ```task_period```: The time in 'ticks' between executions of the task.  
@@ -54,10 +54,10 @@ Control the task timing using:
 
 These two properties allow tasks to be spaced out in the timeline to provide reliable timing.
 
-###Note 2:
-Remember that ```t``` determines how long ```task_offset``` and ```task_period``` are.  
+####Note 2:
+The tick lenth, ```t```, determines how long ```task_offset``` and ```task_period``` are.  
 
-###Example:
+####Example:
 
 Consider two tasks, Task A and Task B configured as follows:
 ```
