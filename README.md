@@ -10,11 +10,17 @@ This is an implementation of a Time Triggered Cooperative (TTC) scheduler, based
 Create your tasks as seperate void functions (see https://www.arduino.cc/en/Reference/FunctionDeclaration):
 
 ```
-void task_function_name() {  
-  /* The code in here will be repeated by the scheduler */  
+void 1st_task_function_name() {  
+  /* [Code for 1st task to be repeated by the scheduler] */  
+}
+
+/* ... */
+
+void nth_task_function_name() {  
+  /* [Code for nth task to be repeated by the scheduler] */  
 }
 ```
-Functions can have any name and can call any other functions you like. 
+Task functions can have any name and can call any other functions you like. 
 
 ##Scheduler configuration
 
@@ -25,18 +31,18 @@ void setup() {
 	/* Tell the scheduler how many tasks there are: */
 	Schedule.begin(n);
 
-	/* Tell the scheduler which tasks are functions, and your desired timing (see note 1). 
-	 * Also include your setup code here as normal */
+	/* Tell the scheduler which functions are tasks, and your desired timing (see note 1). 
+	 * Also include your setup code here as normal: */
 
 	/* ['run-once' setup code for 1st task] */
-	Schedule.addTask(1st_task_function_name, task_offset, task_period);
+	Schedule.addTask(1st_task_function_name, task_1_offset, task_1_period);
 
 	/* ... */
 
 	/* ['run-once' setup code for nth task] */
-	Schedule.addTask(nth_task_function_name, task_offset, task_period);
+	Schedule.addTask(nth_task_function_name, task_n_offset, task_n_period);
 
-	/* Start the scheduler with a tick length, t ms (see note 2)*/
+	/* Start the scheduler with a tick length, t ms (see note 2):*/
 	Schedule.startTicks(t);
 }
 ```
@@ -118,7 +124,7 @@ It depends on the application to decide which task requires the most precise tim
 It is possible to check the timing of tasks using an oscilloscope and configuring an analysis pin for a task. To do this, include the desired pin as a fourth argument when you add the task to the schedule:
 ```Schedule.addTask(task_function_name, task_offset, task_period, pin_number);```  
 
-With an analysis pin enabled, the scheduler will set this pin high just before the task is run, and set it low again when the task completes. (Note there are some overheads involved in setting and clearing the pin, so the timing shown on the oscilloscope wont be spot on, but it'll give you an idea of when tasks are colliding)
+With an analysis pin enabled, the scheduler will set this pin high just before the task is run, and set it low again when the task completes. (Note there are some overheads involved in setting and clearing the pin, so the timing shown on the oscilloscope wont be spot-on, but it'll give you an idea of when tasks are colliding)
 
 ##Find out more
 
