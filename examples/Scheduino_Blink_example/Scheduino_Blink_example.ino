@@ -14,13 +14,19 @@ void setup() {
   Schedule.begin(3);
 
   /* The LED is turned on every 2000 'ticks' and off every 2000 'ticks', offset by 1000 'ticks'*/
+  
+  /* Configure the LED pin as an output */
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
+  /* Add the LED tasks to the schedule */
   Schedule.addTask(ledOn, 0, 2000);
   Schedule.addTask(ledOff, 1000, 2000);
 
   /* The status is output every 100 'ticks', offset by 1 'tick' */
+  
+  /* Configure the serial port to 9600 baud */
   Serial.begin(9600);
+  /* Add the status report task to the schedule */
   Schedule.addTask(statusOut, 1, 100);
 
   /* Starting the scheduler with a tick length of 1 millisecond */
