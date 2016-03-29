@@ -105,7 +105,7 @@ Task C is a very short task, which will run in every tick. Task D is configured 
 
 ![Schedule timeline 2](https://chrisbarlow.files.wordpress.com/2016/03/capture2.png)
 
-However, reversing the order you add them will result in this:
+Now, suppose it is more important that Task D runs exactly every 50 ms, and the timing of Task C can be sacrificed. The priority can be changed in setup:
 
 ```
 Schedule.begin(2);
