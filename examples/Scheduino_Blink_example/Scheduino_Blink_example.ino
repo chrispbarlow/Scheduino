@@ -48,5 +48,5 @@ void ledOff(){
 void statusOut(){
   int pinVal = digitalRead(13);
   Serial.print("LED is: ");
-  Serial.println(pinVal ? "ON" : "OFF");
+  Serial.println(pinVal == HIGH ? "ON" : "OFF");
 }
