@@ -11,8 +11,9 @@
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
-#include "Scheduino.h"
+
 #include "Arduino.h"
+#include "Tasks.h"
 
 #define SET_TA(t) (*(t.analysis_pin_port) |= t.analysis_pin_bit)
 #define CLR_TA(t) (*(t.analysis_pin_port) &= ~t.analysis_pin_bit)
