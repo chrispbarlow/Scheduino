@@ -1,4 +1,4 @@
-# Tasks
+# Arduino Tasks
 A Time Triggered Cooperative scheduler library for Arduino
 
 
