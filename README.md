@@ -16,13 +16,15 @@ Include the library in your sketch:
 
 or
 
-```#include <Tasks.h>```
+```cpp
+#include <Tasks.h>
+```
 
 ##Task Creation
 
 Create your tasks as seperate void functions (see https://www.arduino.cc/en/Reference/FunctionDeclaration):
 
-```
+```cpp
 void task_1_function() {  
   /* [Repeated ('looped') code for Task 1] */  
 }
@@ -39,7 +41,7 @@ Task functions can have any name and can call any other functions you like.
 
 Configure the scheduler in ```setup()```:
 
-```
+```cpp
 void setup() {
 	/* Tell the scheduler how many tasks there are: */
 	Schedule.begin(n);
@@ -73,7 +75,7 @@ The tick length, ```t```, determines how long ```task_offset``` and ```task_peri
 ##Execution
 
 Run the scheduler in ```loop()```:  
-```
+```cpp
 void loop() {
     Schedule.runTasks();
 }
@@ -87,7 +89,7 @@ The scheduler will automatically space the tasks out according to the configured
 ###Basic schedule
 
 Consider two tasks, Task A and Task B configured as follows:
-```
+```cpp
 Schedule.begin(2);
 
 Schedule.addTask(taskA, 0, 5);
@@ -106,7 +108,7 @@ Task A will run every 50 ms starting at tick 0. Task B will run every 100 ms, bu
 If you have multiple tasks that are expected to run in the same tick, it's useful to know that the tasks will run in the order that you add them to the schedule in ```setup()```:
 
 Two tasks, Task C and Task D configured as follows:
-```
+```cpp
 Schedule.begin(2);
 
 Schedule.addTask(taskC, 0, 1);
@@ -120,7 +122,7 @@ Task C is a very short task, which will run in every tick. Task D is configured 
 
 Now, suppose it is more important that Task D runs exactly every 50 ms, and the timing of Task C can be sacrificed. The priority can be changed in setup:
 
-```
+```cpp
 Schedule.begin(2);
 
 Schedule.addTask(taskD, 0, 5);
@@ -137,7 +139,7 @@ It depends on the application to decide which task requires the most precise tim
 ###Timing Analysis
 
 It is possible to check the timing of tasks using an oscilloscope and configuring an analysis pin for a task. To do this, include the desired pin as a fourth argument when you add the task to the schedule:
-```
+```cpp
 Schedule.addTask(task_function_name, task_offset, task_period, pin_number);
 ```  
 
