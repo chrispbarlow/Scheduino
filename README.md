@@ -137,7 +137,9 @@ It depends on the application to decide which task requires the most precise tim
 ###Timing Analysis
 
 It is possible to check the timing of tasks using an oscilloscope and configuring an analysis pin for a task. To do this, include the desired pin as a fourth argument when you add the task to the schedule:
-```Schedule.addTask(task_function_name, task_offset, task_period, pin_number);```  
+```
+Schedule.addTask(task_function_name, task_offset, task_period, pin_number);
+```  
 
 With an analysis pin enabled, the scheduler will set this pin high just before the task is run, and set it low again when the task completes. (Note there are some overheads involved in setting and clearing the pin, so the timing shown on the oscilloscope wont be spot-on, but it'll give you an idea of when tasks are colliding)
 
