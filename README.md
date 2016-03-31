@@ -1,8 +1,8 @@
 #Arduino Tasks
-##A Time Triggered Cooperative Scheduler for Arduino
+##A Time-Triggered Cooperative Scheduler for Arduino
 
 
-This is an implementation of a Time Triggered Cooperative (TTC) scheduler, based on the designs by Dr Michael J. Pont (see http://www.safetty.net/training/beginners)
+This is an implementation of a Time-Triggered Cooperative (TTC) scheduler, based on the designs by Dr Michael J. Pont (see http://www.safetty.net/training/beginners)
 
 ##Installation
 
