@@ -10,8 +10,11 @@
 
 /* Tasks are added to the schedule here in the form addTask(task_function_name, task_period, task_offset) */
 void setup() {
+  /* Configure the serial port to 9600 baud */
+  Serial.begin(9600);
+  
   /* Create a schedule with 3 tasks */
-  Schedule.begin(3);
+  Schedule.begin(6);
 
   /* The LED is turned on every 2000 'ticks' and off every 2000 'ticks', offset by 1000 'ticks'*/
   
@@ -20,22 +23,32 @@ void setup() {
   digitalWrite(13, LOW);
   /* Add the LED tasks to the schedule */
   Schedule.addTask(ledOn, 0, 2000);
+  Schedule.reportAddedTask();
   Schedule.addTask(ledOff, 1000, 2000);
+  Schedule.reportAddedTask();
 
   /* The status is output every 100 'ticks', offset by 1 'tick' */
   
-  /* Configure the serial port to 9600 baud */
-  Serial.begin(9600);
   /* Add the status report task to the schedule */
-  Schedule.addTask(statusOut, 1, 100);
+  Schedule.addTask(statusOut, 1, 100,1);
+  Schedule.reportAddedTask();
+
+  Schedule.addTask(statusOut, 1, 100,TIMING_FORCED);
+  Schedule.reportAddedTask();
+  
+  Schedule.addTask(statusOut, 1, 100,0);
+  Schedule.reportAddedTask();
+
+  Schedule.addTask(statusOut, 1, 100,TIMING_NORMAL,0);
+  Schedule.reportAddedTask();
 
   /* Starting the scheduler with a tick length of 1 millisecond */
-  Schedule.startTicks(1);
+//  Schedule.startTicks(1);
 }
 
 /* It's best not to do anything in loop() except runTasks() - doing anything else here may make affect timing */
 void loop() {
-  Schedule.runTasks();
+//  Schedule.runTasks();
 }
 
 /********** Task Functions **********/
