@@ -17,24 +17,24 @@
 #define SET_TA(t) (*(t.analysis_pin_port) |= t.analysis_pin_bit)
 #define CLR_TA(t) (*(t.analysis_pin_port) &= ~t.analysis_pin_bit)
 
-TTduino Schedule;
+TaskSchedule Schedule;
 
 /* Create a task list */
-void TTduino::begin(uint16_t numTasks){
+void TaskSchedule::begin(uint16_t numTasks){
 	_tasksUsed = 0;
 	_numTasks = numTasks;
 	_taskList = (tasks*)malloc(numTasks*sizeof(tasks));
 	_schedLock = true;
 }
 
-void TTduino::addToTaskList(task_function_t function, uint32_t offset, uint32_t period){
+void TaskSchedule::addToTaskList(task_function_t function, uint32_t offset, uint32_t period){
 	_taskList[_tasksUsed].task_function = function;
 	_taskList[_tasksUsed].task_period = period;
 	_taskList[_tasksUsed].task_delay = offset;
 }
 
 /* Call in setup() Adds a task to the task list */
-void TTduino::addTask(task_function_t function, uint32_t offset, uint32_t period){
+void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t period){
 	if(_tasksUsed < _numTasks){
 		addToTaskList(function,offset,period);
 		_taskList[_tasksUsed].analysis_pin_bit = 0;
@@ -43,7 +43,7 @@ void TTduino::addTask(task_function_t function, uint32_t offset, uint32_t period
 	}
 }
 
-void TTduino::addTask(task_function_t function, uint32_t offset, uint32_t period, uint8_t analysisPin){
+void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t period, uint8_t analysisPin){
 	uint8_t port;
 	if(_tasksUsed < _numTasks){
 		addToTaskList(function,offset,period);
@@ -58,7 +58,7 @@ void TTduino::addTask(task_function_t function, uint32_t offset, uint32_t period
 }
 
 /* Start the timer interrupt (call at the end of setup() )*/
-void TTduino::startTicks(uint16_t period){
+void TaskSchedule::startTicks(uint16_t period){
 	/* initialize Timer1 */
 	wdt_disable();			/* Disable the watchdog timer */
 	cli(); 			/* disable global interrupts */
@@ -76,7 +76,7 @@ void TTduino::startTicks(uint16_t period){
 }
 
 /* Call as the only method in loop(). Handles scheduling of the tasks */
-void TTduino::runTasks(void){
+void TaskSchedule::runTasks(void){
 	uint16_t i;
 	/* Go to sleep. Woken by ISR loop continues, then sleep repeats */
 	sleepNow();
@@ -99,7 +99,7 @@ void TTduino::runTasks(void){
 }
 
 
-void TTduino::sleepNow(){
+void TaskSchedule::sleepNow(){
 	set_sleep_mode(SLEEP_MODE_IDLE);  	/* sleep mode is set here */
 	sleep_enable();											/* enables the sleep bit in the mcucr register */
 																			/* so sleep is possible. just a safety pin */

@@ -5,7 +5,7 @@
  * Replicates the behaviour of the standard Arduino 'Blink' example, while outputting the LED status (ON or OFF) to the Serial port
  *
  */
-#include <Scheduino.h>
+#include <Tasks.h>
 
 
 /* Tasks are added to the schedule here in the form addTask(task_function_name, task_period, task_offset) */

@@ -8,14 +8,14 @@
  * published by the Free Software Foundation.
  */
 
-#ifndef _SCHEDUINO_H_
-#define _SCHEDUINO_H_
+#ifndef _TASKS_H_
+#define _TASKS_H_
 
 #include "Arduino.h"
 
 typedef void (*task_function_t)(void);
 
-class TTduino{
+class TaskSchedule{
   public:
     /* Create a task list */
     void begin(uint16_t numTasks);
@@ -46,6 +46,6 @@ class TTduino{
     void addToTaskList(task_function_t function, uint32_t offset, uint32_t period);
 };
 
-extern TTduino Schedule;
+extern TaskSchedule Schedule;
 
-#endif /* _SCHEDUINO_H_ */
+#endif /* _TASKS_H_ */
