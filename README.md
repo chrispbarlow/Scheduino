@@ -1,5 +1,5 @@
-# Scheduino
-Time Triggered Cooperative scheduler library for Arduino
+# Tasks
+A Time Triggered Cooperative scheduler library for Arduino
 
 Examples are included in the ./examples folder
 
