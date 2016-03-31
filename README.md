@@ -1,9 +1,22 @@
 # Tasks
 A Time Triggered Cooperative scheduler library for Arduino
 
-Examples are included in the ./examples folder
 
 This is an implementation of a Time Triggered Cooperative (TTC) scheduler, based on the designs by Dr Michael J. Pont (see http://www.safetty.net/training/beginners)
+
+##Installation
+
+Copy the *Tasks* library folder into *Arduino/libraries/*
+
+Examples are included in *Tasks/examples*
+
+Include the library in your sketch:
+
+**Sketch --> Include Library --> Tasks**
+
+or
+
+```#include <Tasks.h>```
 
 ##Task Creation
 
