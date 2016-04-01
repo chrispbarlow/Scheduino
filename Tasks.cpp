@@ -89,7 +89,9 @@ String TaskSchedule::lastAddedTask(){
 		output = "---------------------------------------------\n";
 		output += "Added task ";
 		output += String(lastTask);
-		output += "\n---------------------------------------------\n";
+		output += ": \"";
+		output += _taskList[lastTask].task_name;
+		output += "\"\n---------------------------------------------\n";
 		output += "Offset:\t\t";
 		output += String(_taskList[lastTask].task_delay);
 		output += " ms\n";
@@ -99,7 +101,7 @@ String TaskSchedule::lastAddedTask(){
 		output += " ms\n";
 
 		output += "Timing:\t\t";
-		output += (_taskList[lastTask].preempt_flag ? "TIMING_FORCED" : "TIMING_NORMAL");
+		output += (_taskList[lastTask].preempt_flag ? "FORCED" : "NORMAL");
 
 		output += "\nT Analysis:\t";
 		if(_taskList[lastTask].analysis_pin_bitmask){
@@ -120,13 +122,14 @@ String TaskSchedule::lastAddedTask(){
 
 /* Start the timer interrupt (call at the end of setup() )*/
 void TaskSchedule::startTicks(uint16_t period){
-	uint16_t scalarMask = 0x0001;
+	uint16_t scalarMask = 0x0000;
 	uint32_t compMatch = 0;
 	uint32_t clocks = microsecondsToClockCycles(1000) * (uint32_t)period; /* period is in milliseconds */
 
 	/* This dynamically sets the prescalar in order to acheive the maximum accuracy possible for the required tick period */
 	/* Prescalars less than 64 are overkill for a millisecond tick resolution, but it does no harm to include them */
 	do{
+		scalarMask++;
 		switch(scalarMask){
 		case 0x0001:
 			compMatch = clocks - 1;
@@ -148,7 +151,7 @@ void TaskSchedule::startTicks(uint16_t period){
 			scalarMask = 0;
 			break;
 		}
-	}while((scalarMask++ != 0) && (compMatch > 65535));
+	}while((scalarMask != 0) && (compMatch > 0xFFFF));
 	/* if the period won't fit in the 16 bit compare match register, the timer is disabled by setting all prescalar bits to 0 */
 
 	/* initialize Timer1 */

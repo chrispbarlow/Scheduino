@@ -19,3 +19,5 @@ lastAddedTask	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
+TIMING_NORMAL	(LITERAL1)
+TIMING_FORCED	(LITERAL1)
