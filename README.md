@@ -1,8 +1,8 @@
 #Arduino Tasks
-##A Time-Triggered Cooperative Scheduler for Arduino
+##A Time-Triggered Scheduler for Arduino
 
 
-This is an implementation of a Time-Triggered Cooperative (TTC) scheduler, based on the designs by Dr Michael J. Pont (see http://www.safetty.net/training/beginners)
+This is an implementation of a time-triggered scheduler, based on the designs by Dr Michael J. Pont (see http://www.safetty.net/training/beginners)
 
 ##Installation
 
@@ -50,12 +50,13 @@ void setup() {
 	 * Also include your setup code here as normal: */
 
 	/* ['run-once' setup code for 1st task] */
-	Schedule.addTask(task_1_function, task_1_offset, task_1_period);
-
+	Schedule.addTask("Task 1 Name", task_1_function, task_1_offset, task_1_period);
+	/* The name can be anything you like, but must be 20 characters or less */ 
+	
 	/* ... */
 
 	/* ['run-once' setup code for nth task] */
-	Schedule.addTask(task_n_function, task_n_offset, task_n_period);
+	Schedule.addTask("Task n Name", task_n_function, task_n_offset, task_n_period);
 
 	/* Start the scheduler with a tick length, t ms (see note 2):*/
 	Schedule.startTicks(t);
@@ -71,6 +72,43 @@ These two properties allow tasks to be spaced out in the timeline to provide rel
 
 ####Note 2:
 The tick length, ```t```, determines how long ```task_offset``` and ```task_period``` are.  
+
+##Task Reports
+You can check that a task has been added successfully by using ```Schedule.lastAddedTask()``` after you add a task.
+
+Configure the serial port as normal:
+```cpp
+Serial.begin(9600);
+```
+
+Print the last task report to the serial port:
+```cpp
+Schedule.addTask("Task A", task_A_function, 0, 2000);
+Serial.print(Schedule.lastAddedTask());
+```
+
+If all is well, you will see this on the terminal:
+
+```
+---------------------------------------------
+Added task 0
+---------------------------------------------
+Offset:		0 ms
+Period:		2000 ms
+Timing:		TIMING_NORMAL
+T Analysis:	disabled
+---------------------------------------------
+```
+
+If there are no tasks in the schedule you'll see this:
+
+```
+*** No tasks in schedule ***
+```
+
+If there isn't enough space in the schedule, you'll see this:
+
+```
 
 ##Execution
 
@@ -92,8 +130,8 @@ Consider two tasks, Task A and Task B configured as follows:
 ```cpp
 Schedule.begin(2);
 
-Schedule.addTask(taskA, 0, 5);
-Schedule.addTask(taskB, 1, 10);
+Schedule.addTask("Task A", taskA, 0, 5);
+Schedule.addTask("Task B", taskB, 1, 10);
 
 Schedule.startTicks(10);
 ```
@@ -111,8 +149,8 @@ Two tasks, Task C and Task D configured as follows:
 ```cpp
 Schedule.begin(2);
 
-Schedule.addTask(taskC, 0, 1);
-Schedule.addTask(taskD, 0, 5);
+Schedule.addTask("Task C", taskC, 0, 1);
+Schedule.addTask("Task D", taskD, 0, 5);
 
 Schedule.startTicks(10);
 ```
@@ -125,8 +163,8 @@ Now, suppose it is more important that Task D runs exactly every 50 ms, and the 
 ```cpp
 Schedule.begin(2);
 
-Schedule.addTask(taskD, 0, 5);
-Schedule.addTask(taskC, 0, 1);
+Schedule.addTask("Task D", taskD, 0, 5);
+Schedule.addTask("Task C", taskC, 0, 1);
 
 Schedule.startTicks(10);
 ```
@@ -136,11 +174,48 @@ It depends on the application to decide which task requires the most precise tim
 
 ##ADVANCED
 
+###Task Preemption
+
+In the situation below, Task E takes longer than 2 ticks and is a lower priority than task C, which is required to run in every tick.
+
+```cpp
+Schedule.begin(2);
+
+Schedule.addTask("Task C", taskC, 0, 1);
+Schedule.addTask("Task E", taskE, 0, 10);
+
+Schedule.startTicks(10);
+```
+
+Using standard (cooperative) scheduling, this will result in undesirable behaviour (priority inversion). Task C has to wait for Task E to complete, so even though it has a higher priority, it misses execution slots and runs late when Task E does complete.
+
+![Priority inversion](https://chrisbarlow.files.wordpress.com/2016/04/capture4.png)
+
+This can be overcome by allowing Task C to interrupt Task E when it needs to run. This is known as 'task preemption' and is acheived by setting the ```TIMING_FORCED``` option when adding the task:
+
+```cpp
+Schedule.begin(2);
+
+Schedule.addTask("Task C", taskC, 0, 1, TIMING_FORCED);
+Schedule.addTask("Task E", taskE, 0, 10);
+
+Schedule.startTicks(10);
+```
+
+Now the tasks execute as required, with Task C maintaining its higher priority:
+
+![Corrected timeline with preemption](https://chrisbarlow.files.wordpress.com/2016/04/capture5.png)
+
 ###Timing Analysis
 
 It is possible to check the timing of tasks using an oscilloscope and configuring an analysis pin for a task. To do this, include the desired pin as a fourth argument when you add the task to the schedule:
+
 ```cpp
 Schedule.addTask(task_function_name, task_offset, task_period, pin_number);
+```  
+or
+```cpp
+Schedule.addTask(task_function_name, task_offset, task_period, TIMING_FORCED, pin_number);
 ```  
 
 With an analysis pin enabled, the scheduler will set this pin high just before the task is run, and set it low again when the task completes. (Note there are some overheads involved in setting and clearing the pin, so the timing shown on the oscilloscope wont be spot-on, but it'll give you an idea of when tasks are colliding)
