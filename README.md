@@ -83,32 +83,33 @@ Serial.begin(9600);
 
 Print the last task report to the serial port:
 ```cpp
-Schedule.addTask("Task A", task_A_function, 0, 2000);
+Schedule.addTask("Test Task", task_A_function, 0, 2000);
 Serial.print(Schedule.lastAddedTask());
 ```
 
-If all is well, you will see this on the terminal:
-
+If all is well, you will see this in the terminal:
 ```
 ---------------------------------------------
-Added task 0
+Added Task 0: "Test Task"
 ---------------------------------------------
 Offset:		0 ms
 Period:		2000 ms
-Timing:		TIMING_NORMAL
+Timing:		NORMAL
 T Analysis:	disabled
 ---------------------------------------------
 ```
 
 If there are no tasks in the schedule you'll see this:
-
 ```
 *** No tasks in schedule ***
 ```
 
 If there isn't enough space in the schedule, you'll see this:
-
 ```
+*** We're going to need a bigger schedule ***
+```
+If you see this message, you need to increase the number in ```Schedule.begin``` to match the number of tasks you want.
+
 
 ##Execution
 
@@ -205,6 +206,8 @@ Schedule.startTicks(10);
 Now the tasks execute as required, with Task C maintaining its higher priority:
 
 ![Corrected timeline with preemption](https://chrisbarlow.files.wordpress.com/2016/04/capture5.png)
+
+**NOTE: Tasks added with TIMING_FORCED must be shorter than 1 tick, otherwise ticks will be missed**
 
 ###Timing Analysis
 
