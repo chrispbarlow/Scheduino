@@ -15,8 +15,8 @@
 #include "Arduino.h"
 #include "Tasks.h"
 
-#define SET_TA(t) (*(t.analysis_pin_port) |= t.analysis_pin_bit)
-#define CLR_TA(t) (*(t.analysis_pin_port) &= ~t.analysis_pin_bit)
+#define SET_TA(t) (*(t.analysis_pin_port) |= t.analysis_pin_bitmask)
+#define CLR_TA(t) (*(t.analysis_pin_port) &= ~t.analysis_pin_bitmask)
 
 TaskSchedule Schedule;
 
@@ -31,9 +31,9 @@ void TaskSchedule::begin(uint16_t numTasks){
 }
 
 /* Call in setup() Adds a task to the task list */
-void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t period){
+void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period){
 	if(_tasksUsed < _numTasks){
-		addToTaskList(function,offset,period,TIMING_NORMAL);
+		addToTaskList(taskName,function,offset,period,TIMING_NORMAL,0);
 		disableTA();
 		_tasksUsed++;
 	}
@@ -42,9 +42,9 @@ void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t p
 	}
 }
 
-void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive){
+void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive){
 	if(_tasksUsed < _numTasks){
-		addToTaskList(function,offset,period,isPreemptive);
+		addToTaskList(taskName,function,offset,period,isPreemptive,0);
 		disableTA();
 		_tasksUsed++;
 	}
@@ -53,10 +53,9 @@ void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t p
 	}
 }
 
-void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t period, uint8_t analysisPin){
-	uint8_t port;
+void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, uint8_t analysisPin){
 	if(_tasksUsed < _numTasks){
-		addToTaskList(function,offset,period,TIMING_NORMAL);
+		addToTaskList(taskName,function,offset,period,TIMING_NORMAL,analysisPin);
 		enableTA(analysisPin);
 		_tasksUsed++;
 	}
@@ -65,10 +64,9 @@ void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t p
 	}
 }
 
-void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t analysisPin){
-	uint8_t port;
+void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t analysisPin){
 	if(_tasksUsed < _numTasks){
-		addToTaskList(function,offset,period,isPreemptive);
+		addToTaskList(taskName,function,offset,period,isPreemptive,analysisPin);
 		enableTA(analysisPin);
 		_tasksUsed++;
 	}
@@ -77,31 +75,47 @@ void TaskSchedule::addTask(task_function_t function, uint32_t offset, uint32_t p
 	}
 }
 
-/* Print a report of the last added task */
-void TaskSchedule::reportAddedTask(){
+/* Print a report of the last added task (requires Serial to be configured first) */
+String TaskSchedule::lastAddedTask(){
 	uint16_t lastTask;
+	String output = "";
 
 	if(_errTooManyTasks){
-		Serial.println("We're going to need a bigger schedule\n");
+		output = "*** We're going to need a bigger schedule ***\n\n";
 	}
-	if(_tasksUsed > 0){
+	else if(_tasksUsed > 0){
 		lastTask = _tasksUsed - 1;
-		Serial.print("Added task ");
-		Serial.print(lastTask);
-		Serial.println(":\n");
 
-		Serial.print("Offset: ");
-		Serial.println(_taskList[lastTask].task_delay);
+		output = "---------------------------------------------\n";
+		output += "Added task ";
+		output += String(lastTask);
+		output += "\n---------------------------------------------\n";
+		output += "Offset:\t\t";
+		output += String(_taskList[lastTask].task_delay);
+		output += " ms\n";
 
-		Serial.print("Period: ");
-		Serial.println(_taskList[lastTask].task_period);
+		output += "Period:\t\t";
+		output += String(_taskList[lastTask].task_period);
+		output += " ms\n";
 
-		Serial.println(_taskList[lastTask].preempt_flag ? "Timing set to TIMING_FORCED" : "Timing set to TIMING_NORMAL");
-		Serial.println(_taskList[lastTask].analysis_pin_bit ? "Timing analysis enabled\n" : "Timing analysis disabled\n");
+		output += "Timing:\t\t";
+		output += (_taskList[lastTask].preempt_flag ? "TIMING_FORCED" : "TIMING_NORMAL");
+
+		output += "\nT Analysis:\t";
+		if(_taskList[lastTask].analysis_pin_bitmask){
+			output += "enabled on pin ";
+			output += String(_taskList[lastTask].analysis_pin);
+		}
+		else{
+			output += "disabled";
+		}
+		output += ("\n---------------------------------------------\n\n");
 	}
 	else{
-		Serial.println("No tasks in schedule\n");
+		output = "*** No tasks in schedule ***\n\n";
 	}
+
+	return output;
 }
 
 /* Start the timer interrupt (call at the end of setup() )*/
@@ -132,8 +146,8 @@ void TaskSchedule::runTasks(void){
 	/*_schedLock prevents scheduler from running on non-timer interrupt */
 	if (_schedLock == false){
 		for(i = 0; i < _tasksUsed; i++){
-			if(_taskList[i].preempt_flag == TIMING_NORMAL){
-				launchWhenReady(i);
+			if((_taskList[i].preempt_flag == TIMING_NORMAL)&&(_taskList[i].task_delay == 0)){
+				dispatchTask(i);
 			}
 		}
 	}
@@ -157,41 +171,42 @@ void TaskSchedule::sleepNow(){
 /* THE PROGRAM IS WOKEN BY TIMER1 ISR */
 }
 
-void TaskSchedule::addToTaskList(task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive){
+void TaskSchedule::addToTaskList(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin){
+	strncpy(_taskList[_tasksUsed].task_name, taskName.c_str(), (sizeof(_taskList[_tasksUsed].task_name)-1));
+
 	_taskList[_tasksUsed].task_function = function;
 	_taskList[_tasksUsed].task_period = period;
 	_taskList[_tasksUsed].task_delay = offset;
 	_taskList[_tasksUsed].preempt_flag = isPreemptive;
+	_taskList[_tasksUsed].analysis_pin = pin;
 }
 
-void TaskSchedule::launchWhenReady(uint16_t taskIndex){
-	/* Task is ready when task_delay = 0 */
-	if(_taskList[taskIndex].task_delay == 0){
-		/* Reload task_delay */
-		_taskList[taskIndex].task_delay = (_taskList[taskIndex].task_period - 1);
-		SET_TA(_taskList[taskIndex]);
-		/* Call task function */
-		(*_taskList[taskIndex].task_function)();
-		CLR_TA(_taskList[taskIndex]);
-	}
+void TaskSchedule::dispatchTask(uint16_t taskIndex){
+	/* Reload task_delay */
+	_taskList[taskIndex].task_delay = (_taskList[taskIndex].task_period - 1);
+	SET_TA(_taskList[taskIndex]);
+	/* Call task function */
+	(*_taskList[taskIndex].task_function)();
+	CLR_TA(_taskList[taskIndex]);
 }
 
 void TaskSchedule::enableTA(uint8_t pin){
 	uint8_t port;
 	pinMode(pin, OUTPUT);
 	digitalWrite(pin, LOW);
-	_taskList[_tasksUsed].analysis_pin_bit = digitalPinToBitMask(pin);
+	_taskList[_tasksUsed].analysis_pin_bitmask = digitalPinToBitMask(pin);
 	port = digitalPinToPort(pin);
 	_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(port);
 }
 
 void TaskSchedule::disableTA(void){
-	_taskList[_tasksUsed].analysis_pin_bit = 0;
+	_taskList[_tasksUsed].analysis_pin_bitmask = 0;
 	_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(0);
 }
 
 
-/* The ISR runs periodically every tick */
+/* The ISR runs periodically every tick
+ * Friend of TaskSchedule                */
 void __isrTick(){
 	uint16_t i;
 	sleep_disable();        /* disable sleep */
@@ -201,9 +216,9 @@ void __isrTick(){
 		if(Schedule._taskList[i].task_delay > 0){
 			Schedule._taskList[i].task_delay--;
 		}
-
-		if(Schedule._taskList[i].preempt_flag == TIMING_FORCED){
-			Schedule.launchWhenReady(i);
+		/* Preemptive tasks are executed from the ISR */
+		if((Schedule._taskList[i].preempt_flag == TIMING_FORCED)&&(Schedule._taskList[i].task_delay == 0)){
+			Schedule.dispatchTask(i);
 		}
 	}
 	Schedule._schedLock = false;		/* allow scheduler to run */
@@ -211,3 +226,5 @@ void __isrTick(){
 ISR(TIMER1_COMPA_vect){
 	__isrTick();
 }
+
+

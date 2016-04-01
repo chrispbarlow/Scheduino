@@ -14,6 +14,7 @@ begin	KEYWORD2
 addTask	KEYWORD2
 startTicks	KEYWORD2
 runTasks	KEYWORD2
+lastAddedTask	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
