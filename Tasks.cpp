@@ -120,20 +120,51 @@ String TaskSchedule::lastAddedTask(){
 
 /* Start the timer interrupt (call at the end of setup() )*/
 void TaskSchedule::startTicks(uint16_t period){
-	/* initialize Timer1 */
-	wdt_disable();			/* Disable the watchdog timer */
-	cli(); 			/* disable global interrupts */
-	TCCR1A = 0; 	/* set entire TCCR1A register to 0 */
-	TCCR1B = 0; 	/* same for TCCR1B */
+	uint16_t scalarMask = 0x0001;
+	uint32_t compMatch = 0;
+	uint32_t clocks = microsecondsToClockCycles(1000) * (uint32_t)period; /* period is in milliseconds */
 
-	/* set compare match register to desired timer count: */
-	OCR1A = (16000 * period); /* period is in milliseconds */
-	/* turn on CTC mode: */
-	TCCR1B |= (1 << WGM12);
-	/* enable timer compare interrupt: */
-	TIMSK1 |= (1 << OCIE1A);
-	TCCR1B |= (1 << CS10);
-	sei(); /* enable global interrupts (start the timer)*/
+	/* This dynamically sets the prescalar in order to acheive the maximum accuracy possible for the required tick period */
+	/* Prescalars less than 64 are overkill for a millisecond tick resolution, but it does no harm to include them */
+	do{
+		switch(scalarMask){
+		case 0x0001:
+			compMatch = clocks - 1;
+			break;
+		case 0x0002:
+			compMatch = (clocks/8) - 1;
+			break;
+		case 0x0003:
+			compMatch = (clocks/64) - 1;
+			break;
+		case 0x0004:
+			compMatch = (clocks/256) - 1;
+			break;
+		case 0x0005:
+			compMatch = (clocks/1024) - 1;
+			break;
+		default:
+			compMatch = 0;
+			scalarMask = 0;
+			break;
+		}
+	}while((scalarMask++ != 0) && (compMatch > 65535));
+	/* if the period won't fit in the 16 bit compare match register, the timer is disabled by setting all prescalar bits to 0 */
+
+	/* initialize Timer1 */
+	wdt_disable();					/* Disable the watchdog timer */
+	cli(); 							/* disable global interrupts */
+
+	TCCR1A = 0x0000; 				/* set entire TCCR1A register to 0 */
+	TCCR1B = 0x0000; 				/* same for TCCR1B */
+
+
+	OCR1A = ((uint16_t)compMatch);	/* set compare match register to desired timer count: */
+	TCCR1B |= (1 << WGM12);			/* turn on CTC mode - clears counter on compare match */
+	TCCR1B |= (scalarMask);			/* set prescalar (scalarMask = 0 disables the timer) */
+	TIMSK1 |= (1 << OCIE1A);		/* enable timer compare interrupt: */
+
+	sei(); 							/* enable global interrupts (start the timer)*/
 }
 
 /* Call as the only method in loop(). Handles scheduling of the tasks */
