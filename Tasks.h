@@ -55,11 +55,6 @@ class TaskSchedule{
 	uint16_t _tasksUsed;
 	uint16_t _numTasks;
 	bool _schedLock;
-	void sleepNow(void);
-	void addToTaskList(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin);
-	void dispatchTask(uint16_t taskIndex);
-	void enableTA(uint8_t pin);
-	void disableTA(void);
 
 	/* Error flags */
 	struct schedulerErrors{
@@ -67,6 +62,12 @@ class TaskSchedule{
 		bool errTicksTooLong;
 	};
 	schedulerErrors _errorFlags;
+
+	void sleepNow(void);
+	void addToTaskList(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin);
+	void dispatchTask(uint16_t taskIndex);
+	void enableTA(uint8_t pin);
+	void disableTA(void);
 };
 
 extern TaskSchedule Schedule;
