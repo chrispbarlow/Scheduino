@@ -38,7 +38,7 @@ void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t o
 		_tasksUsed++;
 	}
 	else{
-		_errTooManyTasks = true;
+		_errorFlags.errTooManyTasks = true;
 	}
 }
 
@@ -49,7 +49,7 @@ void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t o
 		_tasksUsed++;
 	}
 	else{
-		_errTooManyTasks = true;
+		_errorFlags.errTooManyTasks = true;
 	}
 }
 
@@ -60,7 +60,7 @@ void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t o
 		_tasksUsed++;
 	}
 	else{
-		_errTooManyTasks = true;
+		_errorFlags.errTooManyTasks = true;
 	}
 }
 
@@ -71,7 +71,7 @@ void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t o
 		_tasksUsed++;
 	}
 	else{
-		_errTooManyTasks = true;
+		_errorFlags.errTooManyTasks = true;
 	}
 }
 
@@ -80,7 +80,7 @@ String TaskSchedule::lastAddedTask(){
 	uint16_t lastTask;
 	String output = "";
 
-	if(_errTooManyTasks){
+	if(_errorFlags.errTooManyTasks == true){
 		output = "*** We're going to need a bigger schedule ***\n\n";
 	}
 	else if(_tasksUsed > 0){
@@ -120,7 +120,9 @@ String TaskSchedule::lastAddedTask(){
 	return output;
 }
 
-/* Start the timer interrupt (call at the end of setup() )*/
+/* Start the timer interrupt (call at the end of setup() )
+ * The period is in ms, with a theoretical maximum value of 4194 ms
+ * If the period exceeds this maximum, the timer will be disabled and the scheduler will not run */
 void TaskSchedule::startTicks(uint16_t period){
 	uint16_t scalarMask = 0x0000;
 	uint32_t compMatch = 0;
@@ -151,8 +153,15 @@ void TaskSchedule::startTicks(uint16_t period){
 			scalarMask = 0;
 			break;
 		}
-	}while((scalarMask != 0) && (compMatch > 0xFFFF));
+	}while((scalarMask != 0x0000) && (compMatch > 0xFFFF));
 	/* if the period won't fit in the 16 bit compare match register, the timer is disabled by setting all prescalar bits to 0 */
+
+	if(scalarMask == 0x0000){
+		_errorFlags.errTicksTooLong = true;
+	}
+	else{
+		_errorFlags.errTicksTooLong = false;
+	}
 
 	/* initialize Timer1 */
 	wdt_disable();					/* Disable the watchdog timer */
@@ -187,6 +196,14 @@ void TaskSchedule::runTasks(void){
 	}
 }
 
+/* Error checks */
+bool TaskSchedule::checkTooManyTasks(void){
+	return _errorFlags.errTooManyTasks;
+}
+
+bool TaskSchedule::checkTicksTooLong(void){
+	return _errorFlags.errTicksTooLong;
+}
 
 
 /********** Private methods **********/

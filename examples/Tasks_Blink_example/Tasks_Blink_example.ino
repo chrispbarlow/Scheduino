@@ -34,6 +34,18 @@ void setup() {
   
   /* Starting the scheduler with a tick length of 1 millisecond */
   Schedule.startTicks(1);
+
+  /* If there are too many tasks, only the first n tasks will run,
+   *  where n is the number of tasks in Schedule.begin(n)
+   */
+  if(Schedule.checkTooManyTasks() == true){
+    Serial.println("Too many tasks");
+  }
+
+  /* The maximum tick length is 4194 ms */
+  if(Schedule.checkTicksTooLong() == true){
+    Serial.println("Ticks too long");
+  }
 }
 
 /* It's best not to do anything in loop() except runTasks() - doing anything else here will affect timing */

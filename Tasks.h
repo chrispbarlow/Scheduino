@@ -33,6 +33,10 @@ class TaskSchedule{
 	/* Call as the only method in loop(). Handles scheduling of the tasks */
 	void runTasks(void);
 
+	/* Error checks */
+	bool errTooManyTasks(void);
+	bool errTicksTooLong(void);
+
 	/* local ISR function (not accessible to public) */
 	friend void __isrTick(void);
 
@@ -51,12 +55,18 @@ class TaskSchedule{
 	uint16_t _tasksUsed;
 	uint16_t _numTasks;
 	bool _schedLock;
-	bool _errTooManyTasks;
 	void sleepNow(void);
 	void addToTaskList(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin);
 	void dispatchTask(uint16_t taskIndex);
 	void enableTA(uint8_t pin);
 	void disableTA(void);
+
+	/* Error flags */
+	struct schedulerErrors{
+		bool errTooManyTasks;
+		bool errTicksTooLong;
+	};
+	schedulerErrors _errorFlags;
 };
 
 extern TaskSchedule Schedule;
