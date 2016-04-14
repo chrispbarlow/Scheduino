@@ -149,12 +149,12 @@ void TaskSchedule::startTicks(uint16_t period){
 			compMatch = (clocks/1024) - 1;
 			break;
 		default:
+			/* if the period won't fit in the 16 bit compare match register, the timer is disabled by setting all prescalar bits to 0 */
 			compMatch = 0;
 			scalarMask = 0;
 			break;
 		}
 	}while((scalarMask != 0x0000) && (compMatch > 0xFFFF));
-	/* if the period won't fit in the 16 bit compare match register, the timer is disabled by setting all prescalar bits to 0 */
 
 	if(scalarMask == 0x0000){
 		_errorFlags.errTicksTooLong = true;
@@ -169,7 +169,6 @@ void TaskSchedule::startTicks(uint16_t period){
 
 	TCCR1A = 0x0000; 				/* set entire TCCR1A register to 0 */
 	TCCR1B = 0x0000; 				/* same for TCCR1B */
-
 
 	OCR1A = ((uint16_t)compMatch);	/* set compare match register to desired timer count: */
 	TCCR1B |= (1 << WGM12);			/* turn on CTC mode - clears counter on compare match */

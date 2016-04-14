@@ -34,8 +34,8 @@ class TaskSchedule{
 	void runTasks(void);
 
 	/* Error checks */
-	bool errTooManyTasks(void);
-	bool errTicksTooLong(void);
+	bool checkTooManyTasks(void);
+	bool checkTicksTooLong(void);
 
 	/* local ISR function (not accessible to public) */
 	friend void __isrTick(void);
