@@ -28,6 +28,8 @@ void TaskSchedule::begin(uint16_t numTasks){
 	_tasksUsed = 0;
 	_numTasks = numTasks;
 	_taskList = (tasks*)malloc(numTasks*sizeof(tasks));
+	_errorFlags.errTooManyTasks = false;
+	_errorFlags.errTicksTooLong = false;
 	_schedLock = true;
 }
 
