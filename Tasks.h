@@ -64,10 +64,8 @@ class TaskSchedule{
 	schedulerErrors _errorFlags;
 
 	void sleepNow(void);
-	void addToTaskList(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin);
+	void addNewTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin);
 	void dispatchTask(uint16_t taskIndex);
-	void enableTA(uint8_t pin);
-	void disableTA(void);
 };
 
 extern TaskSchedule Schedule;

@@ -17,6 +17,7 @@
 
 #define SET_TA(t) (*(t.analysis_pin_port) |= t.analysis_pin_bitmask)
 #define CLR_TA(t) (*(t.analysis_pin_port) &= ~t.analysis_pin_bitmask)
+#define NO_TA 		(0xFF)
 
 TaskSchedule Schedule;
 
@@ -31,48 +32,24 @@ void TaskSchedule::begin(uint16_t numTasks){
 }
 
 /* Call in setup() Adds a task to the task list */
+/* Add a standard task */
 void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period){
-	if(_tasksUsed < _numTasks){
-		addToTaskList(taskName,function,offset,period,TIMING_NORMAL,0);
-		disableTA();
-		_tasksUsed++;
-	}
-	else{
-		_errorFlags.errTooManyTasks = true;
-	}
+	addNewTask(taskName,function,offset,period,TIMING_NORMAL,NO_TA);
 }
 
+/* Add a task with preemptiveness */
 void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive){
-	if(_tasksUsed < _numTasks){
-		addToTaskList(taskName,function,offset,period,isPreemptive,0);
-		disableTA();
-		_tasksUsed++;
-	}
-	else{
-		_errorFlags.errTooManyTasks = true;
-	}
+	addNewTask(taskName,function,offset,period,isPreemptive,NO_TA);
 }
 
+/* Add a task with a timing analysis pin */
 void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, uint8_t analysisPin){
-	if(_tasksUsed < _numTasks){
-		addToTaskList(taskName,function,offset,period,TIMING_NORMAL,analysisPin);
-		enableTA(analysisPin);
-		_tasksUsed++;
-	}
-	else{
-		_errorFlags.errTooManyTasks = true;
-	}
+	addNewTask(taskName,function,offset,period,TIMING_NORMAL,analysisPin);
 }
 
+/* Add a task with preemptiveness and a timing analysis pin */
 void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t analysisPin){
-	if(_tasksUsed < _numTasks){
-		addToTaskList(taskName,function,offset,period,isPreemptive,analysisPin);
-		enableTA(analysisPin);
-		_tasksUsed++;
-	}
-	else{
-		_errorFlags.errTooManyTasks = true;
-	}
+	addNewTask(taskName,function,offset,period,isPreemptive,analysisPin);
 }
 
 /* Print a report of the last added task (requires Serial to be configured first) */
@@ -221,14 +198,37 @@ void TaskSchedule::sleepNow(){
 /* THE PROGRAM IS WOKEN BY TIMER1 ISR */
 }
 
-void TaskSchedule::addToTaskList(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin){
-	strncpy(_taskList[_tasksUsed].task_name, taskName.c_str(), (sizeof(_taskList[_tasksUsed].task_name)-1));
+void TaskSchedule::addNewTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin){
+	uint8_t port;
 
-	_taskList[_tasksUsed].task_function = function;
-	_taskList[_tasksUsed].task_period = period;
-	_taskList[_tasksUsed].task_delay = offset;
-	_taskList[_tasksUsed].preempt_flag = isPreemptive;
-	_taskList[_tasksUsed].analysis_pin = pin;
+	if(_tasksUsed < _numTasks){
+		strncpy(_taskList[_tasksUsed].task_name, taskName.c_str(), (sizeof(_taskList[_tasksUsed].task_name)-1));
+
+		_taskList[_tasksUsed].task_function = function;
+		_taskList[_tasksUsed].task_period = period;
+		_taskList[_tasksUsed].task_delay = offset;
+		_taskList[_tasksUsed].preempt_flag = isPreemptive;
+
+		if(pin == NO_TA){
+				_taskList[_tasksUsed].analysis_pin = 0;
+				_taskList[_tasksUsed].analysis_pin_bitmask = 0;
+				_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(0);
+		}
+		else{
+				port = digitalPinToPort(pin);
+				_taskList[_tasksUsed].analysis_pin = pin;
+				_taskList[_tasksUsed].analysis_pin_bitmask = digitalPinToBitMask(pin);
+				_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(port);
+
+				pinMode(pin, OUTPUT);
+				digitalWrite(pin, LOW);
+		}
+
+		_tasksUsed++;
+	}
+	else{
+		_errorFlags.errTooManyTasks = true;
+	}
 }
 
 void TaskSchedule::dispatchTask(uint16_t taskIndex){
@@ -238,20 +238,6 @@ void TaskSchedule::dispatchTask(uint16_t taskIndex){
 	/* Call task function */
 	(*_taskList[taskIndex].task_function)();
 	CLR_TA(_taskList[taskIndex]);
-}
-
-void TaskSchedule::enableTA(uint8_t pin){
-	uint8_t port;
-	pinMode(pin, OUTPUT);
-	digitalWrite(pin, LOW);
-	_taskList[_tasksUsed].analysis_pin_bitmask = digitalPinToBitMask(pin);
-	port = digitalPinToPort(pin);
-	_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(port);
-}
-
-void TaskSchedule::disableTA(void){
-	_taskList[_tasksUsed].analysis_pin_bitmask = 0;
-	_taskList[_tasksUsed].analysis_pin_port = portOutputRegister(0);
 }
 
 
