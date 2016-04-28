@@ -22,7 +22,7 @@ or
 
 ##Task Creation
 
-Create your tasks as seperate void functions (see https://www.arduino.cc/en/Reference/FunctionDeclaration):
+Create your tasks as separate void functions (see https://www.arduino.cc/en/Reference/FunctionDeclaration):
 
 ```cpp
 void task_1_function() {  
