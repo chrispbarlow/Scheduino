@@ -21,6 +21,16 @@
 
 TaskSchedule Schedule;
 
+
+TaskPlugin::TaskPlugin(String pluginName, task_function_t pluginUpdate){
+		name = pluginName;
+		function = (task_function_t)pluginUpdate;
+
+		/* TODO: open this up to addPlugin API? */
+		timingFlag = TIMING_NORMAL;
+}
+
+
 /********** Public methods **********/
 
 /* Create a task list */
@@ -53,6 +63,11 @@ void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t o
 void TaskSchedule::addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t analysisPin){
 	addNewTask(taskName,function,offset,period,isPreemptive,analysisPin);
 }
+
+void TaskSchedule::enablePlugin(TaskPlugin plugin, uint32_t offset, uint32_t period){
+	addNewTask(plugin.name, plugin.function, offset, period, plugin.timingFlag, NO_TA);
+}
+
 
 /* Print a report of the last added task (requires Serial to be configured first) */
 String TaskSchedule::lastAddedTask(){
@@ -264,5 +279,4 @@ void __isrTick(){
 ISR(TIMER1_COMPA_vect){
 	__isrTick();
 }
-
 

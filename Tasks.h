@@ -14,10 +14,19 @@
 #include "Arduino.h"
 
 typedef enum{TIMING_NORMAL, TIMING_FORCED}timingType_t;
+typedef void (*task_function_t)(void);
+
+class TaskPlugin{
+	public:
+		TaskPlugin(String pluginName, task_function_t pluginUpdate);
+		String						name;				/* Task name */
+		task_function_t		init;						/* function pointer */
+		task_function_t		function;				/* function pointer */
+		timingType_t			timingFlag;			/* controls whether the task is preemptive (runs in ISR) or cooperative (runs in scheduler) */
+};
 
 class TaskSchedule{
   public:
-	typedef void (*task_function_t)(void);
 
 	/* Create a task list */
 	void begin(uint16_t numTasks);
@@ -26,6 +35,7 @@ class TaskSchedule{
 	void addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive);
 	void addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, uint8_t analysisPin);
 	void addTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t analysisPin);
+	void enablePlugin(TaskPlugin plugin, uint32_t offset, uint32_t period);
 	/* Print a report of the last added task (requires Serial to be configured first) */
 	String lastAddedTask(void);
 	/* Start the timer interrupt (call at the end of setup() )*/
@@ -39,6 +49,8 @@ class TaskSchedule{
 
 	/* local ISR function (not accessible to public) */
 	friend void __isrTick(void);
+
+	uint32_t tickLength;
 
   private:
 	struct tasks{
@@ -67,6 +79,7 @@ class TaskSchedule{
 	void addNewTask(String taskName, task_function_t function, uint32_t offset, uint32_t period, timingType_t isPreemptive, uint8_t pin);
 	void dispatchTask(uint16_t taskIndex);
 };
+
 
 extern TaskSchedule Schedule;
 
