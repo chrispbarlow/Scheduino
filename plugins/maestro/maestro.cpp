@@ -8,6 +8,8 @@
  * To use this plugin with the Tasks library, use
  * Scheduler.enablePlugin(maestro.pluginTask, [offset], [period]);
  *
+ * [offset] and [period] should be chosen to suit the application.
+ *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of either the GNU General Public License version 2
  * or the GNU Lesser General Public License version 2.1, both as
