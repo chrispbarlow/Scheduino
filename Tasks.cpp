@@ -22,12 +22,10 @@
 TaskSchedule Schedule;
 
 
-TaskPlugin::TaskPlugin(String pluginName, task_function_t pluginUpdate){
+TaskPlugin::TaskPlugin(String pluginName, task_function_t pluginUpdate, timingType_t timing){
 		name = pluginName;
 		function = (task_function_t)pluginUpdate;
-
-		/* TODO: open this up to addPlugin API? */
-		timingFlag = TIMING_NORMAL;
+		timingFlag = timing;
 }
 
 
@@ -279,4 +277,3 @@ void __isrTick(){
 ISR(TIMER1_COMPA_vect){
 	__isrTick();
 }
-

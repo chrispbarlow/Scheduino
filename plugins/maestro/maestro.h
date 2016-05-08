@@ -13,7 +13,7 @@
  * or the GNU Lesser General Public License version 2.1, both as
  * published by the Free Software Foundation.
  */
- 
+
 #ifndef maestro_H_
 #define maestro_H_
 #include <Tasks.h>
@@ -38,7 +38,7 @@ void Maestro_pluginUpdate(void);
 class MaestroPlugin{
 public:
 	friend void Maestro_pluginUpdate(void);
-	MaestroPlugin() : pluginTask("Servo Controller", Maestro_pluginUpdate){}
+	MaestroPlugin() : pluginTask("Servo Controller", Maestro_pluginUpdate, TIMING_NORMAL){}
 	TaskPlugin pluginTask;
 
 	void init(void);

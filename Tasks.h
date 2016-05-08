@@ -18,9 +18,8 @@ typedef void (*task_function_t)(void);
 
 class TaskPlugin{
 	public:
-		TaskPlugin(String pluginName, task_function_t pluginUpdate);
+		TaskPlugin(String pluginName, task_function_t pluginUpdate, timingType_t timing);
 		String						name;				/* Task name */
-		task_function_t		init;						/* function pointer */
 		task_function_t		function;				/* function pointer */
 		timingType_t			timingFlag;			/* controls whether the task is preemptive (runs in ISR) or cooperative (runs in scheduler) */
 };
