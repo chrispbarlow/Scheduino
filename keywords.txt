@@ -6,18 +6,20 @@
 # Datatypes (KEYWORD1)
 #######################################
 Schedule	KEYWORD1
+maestro KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 begin	KEYWORD2
 addTask	KEYWORD2
-addPlugin	KEYWORD2
+enablePlugin	KEYWORD2
 startTicks	KEYWORD2
 runTasks	KEYWORD2
 lastAddedTask	KEYWORD2
 checkTooManyTasks	KEYWORD2
 checkTicksTooLong	KEYWORD2
+pluginTask  KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
