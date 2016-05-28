@@ -37,6 +37,12 @@ void task_n_function() {
 ```
 Task functions can have any name and can call any other functions you like. 
 
+###Freeing yourself from the Arduino IDE
+
+For more advanced programmers who know their way around C, Tasks gives you a clean way of writing your code in any text editor you like. Simply add a 'Tasks' folder to the sketch folder and add a sub-folder for each task. Give each task a .cpp and .h file as you normally would. You can then use the Arduino IDE just for task configuration and compiling / uploading your project. The rest of the coding can be done in a more 'comfortable' editor (You can do this anyway, but Tasks gives you a clean separation of concerns).
+
+![Clean coding](https://chrisbarlow.files.wordpress.com/2016/05/capture.png)
+
 ##Scheduler configuration
 
 Configure the scheduler in ```setup()```:
