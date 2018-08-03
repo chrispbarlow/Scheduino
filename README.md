@@ -1,10 +1,10 @@
-#Arduino Tasks
-##A Time-Triggered Scheduler for Arduino
+# Arduino Tasks
+## A Time-Triggered Scheduler for Arduino
 
 
 This is an implementation of a time-triggered scheduler, based on the designs by Dr Michael J. Pont (see http://www.safetty.net/training/beginners)
 
-##Installation
+## Installation
 
 Copy the *Tasks* library folder into *Arduino/libraries/*
 
@@ -20,7 +20,7 @@ or
 #include <Tasks.h>
 ```
 
-##Task Creation
+## Task Creation
 
 Create your tasks as separate void functions (see https://www.arduino.cc/en/Reference/FunctionDeclaration):
 
@@ -37,13 +37,13 @@ void task_n_function() {
 ```
 Task functions can have any name and can call any other functions you like. 
 
-###Freeing yourself from the Arduino IDE
+### Freeing yourself from the Arduino IDE
 
 For more advanced programmers who know their way around C, Tasks gives you a clean way of writing your code in any text editor you like. Simply add a 'Tasks' folder to the sketch folder and add a sub-folder for each task. Give each task a .cpp and .h file as you normally would. You can then use the Arduino IDE just for task configuration and compiling / uploading your project. The rest of the coding can be done in a more 'comfortable' editor (You can do this anyway, but Tasks gives you a clean separation of concerns).
 
 ![Clean coding](https://chrisbarlow.files.wordpress.com/2016/05/capture.png)
 
-##Scheduler configuration
+## Scheduler configuration
 
 Configure the scheduler in ```setup()```:
 
@@ -68,7 +68,7 @@ void setup() {
 	Schedule.startTicks(t);
 }
 ```
-####Note 1:
+#### Note 1:
 Control the task timing using:  
 ```task_offset```: The time in 'ticks' between start-up and the first execution of the task.  
 ```task_period```: The time in 'ticks' between executions of the task.  
@@ -76,10 +76,10 @@ Control the task timing using:
 
 These two properties allow tasks to be spaced out in the timeline to provide reliable timing.
 
-####Note 2:
+#### Note 2:
 The tick length, ```t```, determines how long ```task_offset``` and ```task_period``` are.  
 
-##Task Reports
+## Task Reports
 You can check that a task has been added successfully by using ```Schedule.lastAddedTask()``` after you add a task.
 
 Configure the serial port as normal:
@@ -117,7 +117,7 @@ If there isn't enough space in the schedule, you'll see this:
 If you see this message, you need to increase the number in ```Schedule.begin``` to match the number of tasks you want.
 
 
-##Execution
+## Execution
 
 Run the scheduler in ```loop()```:  
 ```cpp
@@ -129,9 +129,9 @@ All other code should be in the task functions, don't put anything else in ```lo
 
 The scheduler will automatically space the tasks out according to the configured schedule.
 
-##Examples:
+## Examples:
 
-###Basic schedule
+### Basic schedule
 
 Consider two tasks, Task A and Task B configured as follows:
 ```cpp
@@ -148,7 +148,7 @@ Timeline:
 
 Task A will run every 50 ms starting at tick 0. Task B will run every 100 ms, but has an offset of 1, so it will first run in tick 1. It doesn't matter that Task B takes longer than 1 tick, because there is enough space for it to complete before Task A is run again.
 
-###Prioritising tasks
+### Prioritising tasks
 
 If you have multiple tasks that are expected to run in the same tick, it's useful to know that the tasks will run in the order that you add them to the schedule in ```setup()```:
 
@@ -179,9 +179,9 @@ Schedule.startTicks(10);
 
 It depends on the application to decide which task requires the most precise timing. Generally controlling (setting pins) or reading tasks need a higher priority than reporting tasks.
 
-##ADVANCED
+## ADVANCED
 
-###Task Preemption
+### Task Preemption
 
 In the situation below, Task E takes longer than 2 ticks and is a lower priority than task C, which is required to run in every tick.
 
@@ -215,7 +215,7 @@ Now the tasks execute as required, with Task C maintaining its higher priority:
 
 **NOTE: Tasks added with TIMING_FORCED must be shorter than 1 tick, otherwise ticks will be missed**
 
-###Timing Analysis
+### Timing Analysis
 
 It is possible to check the timing of tasks using an oscilloscope and configuring an analysis pin for a task. To do this, include the desired pin as a fourth argument when you add the task to the schedule:
 
@@ -229,7 +229,7 @@ Schedule.addTask(task_function_name, task_offset, task_period, TIMING_FORCED, pi
 
 With an analysis pin enabled, the scheduler will set this pin high just before the task is run, and set it low again when the task completes. (Note there are some overheads involved in setting and clearing the pin, so the timing shown on the oscilloscope wont be spot-on, but it'll give you an idea of when tasks are colliding)
 
-##Find out more
+## Find out more
 
 For more information, see:
 http://chrisbarlow.wordpress.com
